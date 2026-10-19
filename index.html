@@ -243,10 +243,12 @@
   .rb-title { left: calc(120 * var(--u)); top: calc(84 * var(--u)); margin: 0; font-size: calc(88 * var(--u)); line-height: 1; font-weight: 700; white-space: nowrap; }
   .rb-hint { left: calc(120 * var(--u)); top: calc(196 * var(--u)); font-size: calc(46 * var(--u)); font-weight: 500; color: var(--lavender); white-space: nowrap; }
   .rb-moon { --k: 1; left: calc(110 * var(--u)); top: calc(290 * var(--u)); width: calc(620 * var(--k) * var(--u)); aspect-ratio: 1; }
-  .rb-moon svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .rb-moon img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .rb-moon .photo { filter: drop-shadow(0 0 calc(30 * var(--u)) rgba(255, 243, 209, .35)); }
   .rb-moon .sil { opacity: 0; transition: opacity 1.2s ease-in; }
   .rabbit.sil-on .rb-moon .sil { opacity: 1; }
-  .rabbit.sil-on .rb-moon svg { animation: moon-glow 2.6s ease-in-out 1s infinite; }
+  /* The rabbit outline is traced from a CC BY-SA image, so it needs visible credit */
+  .rb-credit { right: calc(24 * var(--u)); bottom: calc(10 * var(--u)); font-size: calc(18 * var(--u)); color: var(--lavender); opacity: .75; }
 
   .rb-cards { right: calc(70 * var(--u)); top: calc(290 * var(--u)); width: calc(1000 * var(--u)); display: flex; flex-direction: column; gap: calc(28 * var(--u)); }
   .rb-card {
@@ -991,25 +993,8 @@
     </svg>
 
     <div class="abs rb-moon">
-      <svg role="img" aria-label="Full moon with the shape of a standing rabbit pounding a tall pestle into a bowl" viewBox="0 0 620 620">
-        <circle cx="310" cy="310" r="310" fill="#FFD45E"/>
-        <g fill="#F5C04A">
-          <circle cx="470" cy="150" r="34"/><circle cx="120" cy="420" r="40"/><circle cx="500" cy="470" r="30"/><circle cx="330" cy="110" r="20"/>
-        </g>
-        <!-- The moon-rabbit shape people see in the dark patches: rabbit on the left, bowl on the right -->
-        <g class="sil" fill="#E0A63A">
-          <ellipse cx="262" cy="182" rx="20" ry="62" transform="rotate(-10 262 182)"/>
-          <ellipse cx="312" cy="178" rx="20" ry="62" transform="rotate(10 312 178)"/>
-          <circle cx="290" cy="272" r="58"/>
-          <ellipse cx="292" cy="400" rx="70" ry="94"/>
-          <circle cx="216" cy="420" r="24"/>
-          <ellipse cx="262" cy="492" rx="34" ry="14"/><ellipse cx="324" cy="492" rx="34" ry="14"/>
-          <path d="M340 360 L388 336" stroke="#E0A63A" stroke-width="26" stroke-linecap="round"/>
-          <rect x="390" y="320" width="22" height="104" rx="11"/>
-          <path d="M360 434 L442 434 L432 488 L370 488 Z"/>
-          <rect x="350" y="418" width="102" height="20" rx="10"/>
-        </g>
-      </svg>
+      <img class="photo" src="assets/moon-photo.png" alt="Photo of the full moon">
+      <img class="sil" src="assets/moon-rabbit.png" alt="Gold outline showing the dark patches on the moon as a rabbit standing by a pot">
     </div>
 
     <svg class="abs clouds clouds-front" viewBox="0 0 1920 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
@@ -1076,6 +1061,7 @@
     </div>
 
     <h1 class="abs rb-title">The Rabbit on the Moon</h1>
+    <div class="abs rb-credit">Moon rabbit image: Zeimusu, CC BY-SA 3.0, via Wikimedia Commons</div>
     <div class="abs rb-hint">Look closely… do you see a rabbit?</div>
   </section>
 
