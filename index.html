@@ -1,0 +1,1248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mid-Autumn Festival</title>
+<style>
+  @font-face { font-family: "Fredoka"; font-weight: 300 700; src: url("assets/fonts/fredoka-latin.woff2") format("woff2"); }
+  /* Subset to the Chinese characters the deck uses; re-download with the new text= list when adding characters */
+  @font-face { font-family: "Nunito"; font-weight: 800; src: url("assets/fonts/nunito-800-vietnamese.woff2") format("woff2"); unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB; }
+  @font-face { font-family: "Nunito"; font-weight: 800; src: url("assets/fonts/nunito-800-latin-ext.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: "Nunito"; font-weight: 800; src: url("assets/fonts/nunito-800-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  @font-face { font-family: "ZCOOL KuaiLe"; src: url("assets/fonts/zcool-kuaile-subset.woff2") format("woff2"); }
+
+  :root {
+    --night: #1B1D4D;
+    --ring-outer: #23265C;
+    --ring-inner: #2C3072;
+    --cloud-back: #343A86;
+    --cloud-front: #4A52A8;
+    --moon: #FFD45E;
+    --crater: #F5C04A;
+    --star: #FFE9A6;
+    --cream: #FFF3D1;
+    --lavender: #C9CCF5;
+    --gold: #E9B949;
+    --lantern: #E8452F;
+  }
+
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+
+  /* The stage fills the screen but clamps between 4:3 and 16:9 so slides only have to be designed for that range */
+  .stage {
+    position: absolute; inset: 0; margin: auto;
+    width: min(100vw, 177.78vh); height: min(100vh, 75vw);
+    container-type: size;
+    overflow: hidden;
+    background: var(--night);
+    font-family: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+    color: var(--cream);
+    cursor: pointer;
+    user-select: none;
+  }
+  /* Design unit: the cover mockup was 1080 tall, so 1u = 1/1080 of the stage height at every aspect ratio */
+  .slide { --u: calc(100cqh / 1080); position: absolute; inset: 0; display: none; }
+  .slide.active { display: block; }
+  .abs { position: absolute; }
+
+  .ring-outer { right: calc(10 * var(--u)); top: calc(-40 * var(--u)); width: calc(960 * var(--u)); aspect-ratio: 1; border-radius: 50%; background: var(--ring-outer); }
+  .ring-inner { right: calc(95 * var(--u)); top: calc(45 * var(--u)); width: calc(790 * var(--u)); aspect-ratio: 1; border-radius: 50%; background: var(--ring-inner); }
+  .moon { right: calc(180 * var(--u)); top: calc(130 * var(--u)); width: calc(620 * var(--u)); }
+
+  .bunny { right: calc(510 * var(--u)); top: calc(660 * var(--u)); width: calc(260 * var(--u)); height: calc(300 * var(--u)); }
+  .mooncake-big { right: calc(280 * var(--u)); top: calc(800 * var(--u)); width: calc(170 * var(--u)); height: calc(170 * var(--u)); }
+  .mooncake-small { right: calc(170 * var(--u)); top: calc(850 * var(--u)); width: calc(130 * var(--u)); height: calc(130 * var(--u)); }
+
+  .clouds { left: 0; width: 100%; }
+  .clouds-back { bottom: calc(-90 * var(--u)); height: calc(300 * var(--u)); }
+  .clouds-front { bottom: calc(-60 * var(--u)); height: calc(220 * var(--u)); }
+
+  .title { left: calc(120 * var(--u)); top: calc(384 * var(--u)); display: flex; flex-direction: column; gap: calc(20 * var(--u)); }
+  .title .zh { font-family: "ZCOOL KuaiLe", "PingFang SC", "Microsoft YaHei", sans-serif; font-size: calc(96 * var(--u)); line-height: 1.1; letter-spacing: calc(14 * var(--u)); color: var(--moon); }
+  .title h1 { margin: 0; font-size: calc(132 * var(--u)); line-height: 1; font-weight: 700; white-space: nowrap; }
+  .title .sub { font-size: calc(46 * var(--u)); font-weight: 500; line-height: 1.2; color: var(--lavender); }
+
+  .mia { left: 38%; bottom: -2%; height: 45%; transform-origin: 50% 100%; }
+  .mia .wiggle { height: 100%; transform-origin: 50% 100%; animation: wiggle 1.6s ease-in-out infinite; }
+  .mia img { height: 100%; display: block; filter: drop-shadow(0 6px 12px rgba(0,0,0,.35)); }
+
+  /* Squarer screens (4:3, 16:10): shrink the moon and title so they don't collide */
+  @container (aspect-ratio < 1.6) {
+    .ring-outer { right: calc(-40 * var(--u)); top: calc(-90 * var(--u)); width: calc(780 * var(--u)); }
+    .ring-inner { right: calc(30 * var(--u)); top: calc(-20 * var(--u)); width: calc(640 * var(--u)); }
+    .moon { right: calc(110 * var(--u)); top: calc(60 * var(--u)); width: calc(480 * var(--u)); }
+    .star-near-moon { display: none; }
+    .title { left: calc(90 * var(--u)); }
+    .title h1 { font-size: calc(112 * var(--u)); }
+    .mia { left: calc(510 * var(--u)); height: 40%; }
+    .bunny { right: calc(330 * var(--u)); }
+    .mooncake-big { right: calc(130 * var(--u)); }
+    .mooncake-small { right: calc(30 * var(--u)); }
+  }
+
+  /* ---------- Slide 2: What Is It? ---------- */
+  /* The moon row is laid out around the row's center (x=1005 in the mockup) and shrinks with --k on squarer screens */
+  .what { --k: 1; }
+  .what .cx { left: calc(50% + var(--dx) * var(--k) * var(--u)); top: calc(var(--y) * var(--u)); }
+  .what .phase { width: calc(var(--s) * var(--k) * var(--u)); aspect-ratio: 1; translate: -50% -50%; }
+  .what .phase svg { width: 100%; height: 100%; display: block; }
+  .what .ring { width: calc(var(--s) * var(--k) * var(--u)); aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; }
+
+  .what-title { left: calc(120 * var(--u)); top: calc(84 * var(--u)); margin: 0; font-size: calc(88 * var(--u)); line-height: 1; font-weight: 700; white-space: nowrap; }
+  .what-line { left: calc(120 * var(--u)); font-weight: 500; line-height: 1.15; white-space: nowrap; }
+  .what-line b { font-weight: 700; color: var(--moon); }
+  .what-meaning { top: calc(204 * var(--u)); font-size: calc(56 * var(--u)); }
+  .what-night { top: calc(784 * var(--u)); font-size: calc(52 * var(--u)); }
+
+  /* Entrance: meaning line, then the moon grows phase by phase, then the full-moon line */
+  .what.active .what-meaning { animation: fade-up .6s ease-out .3s both; }
+  .what.active .phase svg { animation: pop .5s cubic-bezier(.3,1.6,.5,1) both; animation-delay: calc(1s + var(--i) * .45s); }
+  .what.active .phase.full svg { animation: pop .7s cubic-bezier(.3,1.6,.5,1) 2.8s both, moon-glow 2.6s ease-in-out 3.5s infinite; }
+  .what.active .ring { animation: pop .7s ease-out 2.7s both; }
+  .what.active .what-night { animation: fade-up .6s ease-out 3.6s both; }
+  @keyframes fade-up {
+    0% { transform: translateY(30%); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes moon-glow {
+    0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 212, 94, 0)); }
+    50% { filter: drop-shadow(0 0 calc(40 * var(--u)) rgba(255, 212, 94, .75)); }
+  }
+
+  @container (aspect-ratio < 1.6) {
+    .what { --k: .75; }
+    .what-title, .what-line { left: calc(90 * var(--u)); }
+    .what-night { font-size: calc(48 * var(--u)); }
+  }
+
+  /* ---------- Slide 4: Who Celebrates ---------- */
+  /* --m scales the map and everything pinned to it; labels are placed in the map's own 960-unit coordinates */
+  .s2-ring { right: calc(-10 * var(--u)); top: calc(-20 * var(--u)); width: calc(1100 * var(--u)); aspect-ratio: 1; border-radius: 50%; background: var(--ring-outer); }
+  .s2-map { --m: var(--u); right: calc(60 * var(--u)); top: calc(50 * var(--u)); width: calc(960 * var(--m)); height: calc(960 * var(--m)); }
+  .s2-map img { width: 100%; height: 100%; display: block; }
+  .s2-map .label { position: absolute; left: calc(var(--x) * var(--m)); top: calc(var(--y) * var(--m)); font-size: calc(28 * var(--u)); font-weight: 500; line-height: 1; white-space: nowrap; color: var(--cream); }
+  .s2-map .label.big { font-size: calc(44 * var(--u)); font-weight: 700; color: var(--night); }
+  .s2-map .sg-dot { position: absolute; left: calc(405 * var(--m)); top: calc(788 * var(--m)); width: calc(14 * var(--m)); height: calc(14 * var(--m)); box-sizing: border-box; border-radius: 50%; background: var(--moon); border: 2px solid var(--night); }
+
+  .s2-title { left: calc(120 * var(--u)); top: calc(360 * var(--u)); display: flex; flex-direction: column; gap: calc(24 * var(--u)); }
+  .s2-title h1 { margin: 0; font-size: calc(104 * var(--u)); line-height: 1; font-weight: 700; white-space: nowrap; }
+  .s2-title .sub { max-width: calc(520 * var(--u)); font-size: calc(42 * var(--u)); font-weight: 500; line-height: 1.25; color: var(--lavender); text-wrap: balance; }
+
+  .s2-bunny { left: calc(580 * var(--u)); top: calc(660 * var(--u)); width: calc(260 * var(--u)); height: calc(300 * var(--u)); transform-origin: 50% 100%; }
+  .s2-bubble {
+    left: calc(160 * var(--u)); top: calc(750 * var(--u)); white-space: nowrap;
+    padding: calc(22 * var(--u)) calc(30 * var(--u));
+    border-radius: calc(36 * var(--u));
+    background: var(--cream); color: var(--night);
+    font-size: calc(36 * var(--u)); font-weight: 700; line-height: 1.2;
+    box-shadow: 0 calc(8 * var(--u)) calc(24 * var(--u)) rgba(0,0,0,.3);
+    transform-origin: 100% 70%;
+    visibility: hidden;
+  }
+  /* Tail points right toward the bunny */
+  .s2-bubble::after {
+    content: ""; position: absolute; right: calc(-26 * var(--u)); top: 55%;
+    border: calc(16 * var(--u)) solid transparent; border-left: calc(30 * var(--u)) solid var(--cream);
+  }
+  .s2-bubble.show { visibility: visible; animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; }
+  .s2-bunny.cheer { animation: bunny-hop .45s ease-in-out 3; }
+
+  .slide.active .pop-in { animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; animation-delay: calc(.3s + var(--i) * .3s); }
+  @keyframes pop {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes bunny-hop {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-14%) scaleY(1.04); }
+    70% { transform: translateY(0) scaleY(.94); }
+  }
+
+  @container (aspect-ratio < 1.6) {
+    .s2-ring { right: calc(-46 * var(--u)); top: calc(84 * var(--u)); width: calc(880 * var(--u)); }
+    .s2-map { --m: calc(var(--u) * .8); right: calc(10 * var(--u)); top: calc(140 * var(--u)); }
+    .s2-title { left: calc(90 * var(--u)); }
+    .s2-title h1 { font-size: calc(92 * var(--u)); }
+    .s2-title .sub { max-width: calc(460 * var(--u)); }
+    .s2-bunny { left: calc(540 * var(--u)); }
+    .s2-bubble { left: calc(130 * var(--u)); }
+  }
+
+  /* ---------- Slide 5: Same Holiday, Different Names ---------- */
+  /* --k scales the kid figures, --t the text; columns stay centered so 4:3 just shrinks them */
+  .s3-title { left: calc(120 * var(--u)); top: calc(84 * var(--u)); margin: 0; font-size: calc(88 * var(--u)); line-height: 1; font-weight: 700; white-space: nowrap; }
+  .s3-title .game { display: none; color: var(--moon); }
+  .s3.guess .s3-title .intro { display: none; }
+  .s3.guess .s3-title .game { display: inline; animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; }
+
+  .s3-row { --k: 1; --t: 1; left: 50%; top: calc(212 * var(--u)); transform: translateX(-50%); display: flex; }
+  .s3-col { width: calc(440 * var(--k) * var(--u)); display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .s3-fig { position: relative; width: 100%; height: calc(500 * var(--k) * var(--u)); }
+  .s3-fig .disc { position: absolute; left: 50%; top: calc(10 * var(--k) * var(--u)); width: calc(350 * var(--k) * var(--u)); aspect-ratio: 1; border-radius: 50%; background: var(--moon); transform: translateX(-50%); transition: box-shadow .3s; }
+  .s3-fig svg { position: absolute; left: 50%; top: 0; width: calc(308 * var(--k) * var(--u)); height: calc(484 * var(--k) * var(--u)); transform: translateX(-50%); }
+  .s3-text { display: flex; flex-direction: column; align-items: center; gap: calc(6 * var(--u)); }
+  .s3-text .country { font-size: calc(30 * var(--t) * var(--u)); font-weight: 500; line-height: 1.2; color: var(--moon); }
+  .s3-text .name { font-family: "Nunito", "Trebuchet MS", "Segoe UI", system-ui, sans-serif; font-size: calc(48 * var(--t) * var(--u)); font-weight: 800; line-height: 1.15; white-space: nowrap; }
+  .s3-text .say { font-size: calc(44 * var(--t) * var(--u)); font-weight: 600; line-height: 1.2; color: #DDE0FF; white-space: nowrap; }
+  .s3-text .say .lbl { font-size: .6em; font-weight: 500; color: var(--lavender); }
+
+  /* Guessing game: countries turn into "?" until the presenter reveals one */
+  .s3-text .country .q { display: none; }
+  .s3.guess .s3-col:not(.revealed) .country .real { display: none; }
+  .s3.guess .s3-col:not(.revealed) .country .q { display: inline; }
+  .s3.guess .s3-col { cursor: pointer; }
+  .s3-col.revealed .country { animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; }
+  .s3-col.revealed .disc { box-shadow: 0 0 0 calc(10 * var(--u)) rgba(255, 233, 166, .35), 0 0 calc(80 * var(--u)) rgba(255, 212, 94, .7); }
+  .s3-col.revealed .s3-fig svg { animation: kid-jump .5s ease-in-out 2; }
+  @keyframes kid-jump {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-8%); }
+  }
+
+  /* Gap stars sit between columns, so they're placed from the center and scale with --k */
+  .s3-gap { --k: 1; left: calc(50% + var(--dx) * var(--k) * var(--u)); top: calc(var(--y) * var(--u)); }
+
+  @container (aspect-ratio < 1.6) {
+    .s3-title { left: calc(90 * var(--u)); font-size: calc(72 * var(--u)); }
+    .s3-row { --k: .77; --t: .85; top: calc(290 * var(--u)); }
+    .s3-gap { --k: .77; }
+  }
+
+  /* ---------- Slide 3: Why & How We Celebrate ---------- */
+  /* Three cards start dimmed so kids see what's coming; each click lights one up */
+  .why-title { left: calc(120 * var(--u)); top: calc(84 * var(--u)); margin: 0; font-size: calc(88 * var(--u)); line-height: 1; font-weight: 700; white-space: nowrap; }
+  .why-row { --k: 1; --t: 1; left: 50%; top: calc(230 * var(--u)); transform: translateX(-50%); display: flex; }
+  .why-col {
+    width: calc(580 * var(--k) * var(--u)); display: flex; flex-direction: column; align-items: center; text-align: center;
+    opacity: .2; filter: grayscale(.7); transform: scale(.92);
+    transition: opacity .4s, filter .4s, transform .5s cubic-bezier(.3,1.6,.5,1);
+  }
+  .why-col.on { opacity: 1; filter: none; transform: scale(1); }
+  .why-fig { position: relative; width: calc(400 * var(--k) * var(--u)); height: calc(440 * var(--k) * var(--u)); }
+  .why-fig .disc { position: absolute; left: 0; top: 0; width: 100%; aspect-ratio: 1; border-radius: 50%; background: var(--ring-inner); }
+  .why-col.on .disc { background: var(--moon); }
+  .why-fig svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .why-fig .num {
+    position: absolute; left: calc(-6 * var(--k) * var(--u)); top: calc(-6 * var(--k) * var(--u));
+    width: calc(76 * var(--k) * var(--u)); aspect-ratio: 1; border-radius: 50%;
+    display: grid; place-items: center; background: var(--lantern); color: var(--cream);
+    font-size: calc(46 * var(--k) * var(--u)); font-weight: 700; line-height: 1;
+    box-shadow: 0 0 0 calc(6 * var(--k) * var(--u)) var(--night);
+  }
+  .why-text { margin-top: calc(18 * var(--u)); display: flex; flex-direction: column; gap: calc(6 * var(--u)); }
+  .why-text .head { font-size: calc(50 * var(--t) * var(--u)); font-weight: 700; line-height: 1.1; white-space: nowrap; }
+  .why-text .sub { font-size: calc(36 * var(--t) * var(--u)); font-weight: 500; line-height: 1.2; color: var(--lavender); white-space: nowrap; }
+
+  @container (aspect-ratio < 1.6) {
+    .why-title { left: calc(90 * var(--u)); font-size: calc(80 * var(--u)); }
+    .why-row { --k: .78; --t: .8; top: calc(310 * var(--u)); }
+  }
+
+  /* ---------- Slide 6: The Rabbit on the Moon ---------- */
+  .rb-title { left: calc(120 * var(--u)); top: calc(84 * var(--u)); margin: 0; font-size: calc(88 * var(--u)); line-height: 1; font-weight: 700; white-space: nowrap; }
+  .rb-hint { left: calc(120 * var(--u)); top: calc(196 * var(--u)); font-size: calc(46 * var(--u)); font-weight: 500; color: var(--lavender); white-space: nowrap; }
+  .rb-moon { --k: 1; left: calc(110 * var(--u)); top: calc(290 * var(--u)); width: calc(620 * var(--k) * var(--u)); aspect-ratio: 1; }
+  .rb-moon svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .rb-moon .sil { opacity: 0; transition: opacity 1.2s ease-in; }
+  .rabbit.sil-on .rb-moon .sil { opacity: 1; }
+  .rabbit.sil-on .rb-moon svg { animation: moon-glow 2.6s ease-in-out 1s infinite; }
+
+  .rb-cards { right: calc(70 * var(--u)); top: calc(290 * var(--u)); width: calc(1000 * var(--u)); display: flex; flex-direction: column; gap: calc(28 * var(--u)); }
+  .rb-card {
+    display: grid; grid-template-columns: calc(230 * var(--u)) 1fr; align-items: center; gap: calc(30 * var(--u));
+    padding: calc(18 * var(--u)) calc(36 * var(--u)) calc(18 * var(--u)) calc(24 * var(--u));
+    border-radius: calc(40 * var(--u)); background: var(--ring-outer);
+    opacity: 0; transform: translateX(8%);
+    transition: opacity .5s, transform .6s cubic-bezier(.3,1.4,.5,1);
+  }
+  .rb-card.on { opacity: 1; transform: none; }
+  .rb-card svg { width: calc(230 * var(--u)); height: calc(230 * var(--u)); display: block; overflow: visible; }
+  .rb-card .tag { justify-self: start; display: inline-block; padding: calc(4 * var(--u)) calc(18 * var(--u)); border-radius: 999px; background: var(--moon); color: var(--night); font-size: calc(28 * var(--u)); font-weight: 700; }
+  .rb-card .txt { display: flex; flex-direction: column; align-items: flex-start; gap: calc(10 * var(--u)); }
+  .rb-card .head { font-size: calc(46 * var(--u)); font-weight: 700; line-height: 1.1; }
+  .rb-card .sub { font-size: calc(34 * var(--u)); font-weight: 500; line-height: 1.2; color: var(--lavender); }
+
+  /* Chang'e drifts gently; the rice-cake rabbit's pestle pounds straight up and down on a loop */
+  .rb-card.on .change { animation: float 3s ease-in-out infinite; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6%); }
+  }
+  /* Short stroke keeps the arm about the same length; the shoulder stays put so the body never leaves its feet */
+  .rb-card .pestle { transform: translateY(-20px); }
+  .rb-card.on .pestle { animation: pound .9s ease-in infinite; }
+  .rb-card.on .pestle-arm { animation: reach .9s ease-in infinite; }
+  .rb-card.on .mochi { transform-box: view-box; transform-origin: 158px 194px; animation: squash .9s ease-in infinite; }
+  @keyframes pound {
+    0%, 100% { transform: translateY(-20px); }
+    45%, 55% { transform: translateY(0); }
+  }
+  @keyframes reach {
+    0%, 100% { d: path("M122 150 L150 118"); }
+    45%, 55% { d: path("M122 150 L150 138"); }
+  }
+  @keyframes squash {
+    0%, 40%, 70%, 100% { transform: scale(1, 1); }
+    50% { transform: scale(1.12, .8); }
+  }
+
+  @container (aspect-ratio < 1.6) {
+    .rb-title, .rb-hint { left: calc(90 * var(--u)); }
+    .rb-moon { --k: .74; left: calc(70 * var(--u)); top: calc(330 * var(--u)); }
+    .rb-cards { right: calc(40 * var(--u)); width: calc(830 * var(--u)); }
+    .rb-card { grid-template-columns: calc(190 * var(--u)) 1fr; gap: calc(22 * var(--u)); }
+    .rb-card svg { width: calc(190 * var(--u)); height: calc(190 * var(--u)); }
+    .rb-card .head { font-size: calc(40 * var(--u)); }
+    .rb-card .sub { font-size: calc(30 * var(--u)); }
+  }
+
+  /* ---------- Slide 7: Let's Make Paper Lanterns ---------- */
+  .mk-title { left: calc(120 * var(--u)); top: calc(84 * var(--u)); margin: 0; font-size: calc(88 * var(--u)); line-height: 1; font-weight: 700; white-space: nowrap; }
+  .mk-row { --k: 1; --t: 1; left: 50%; top: calc(220 * var(--u)); transform: translateX(-50%); display: flex; }
+  .mk-col {
+    width: calc(440 * var(--k) * var(--u)); display: flex; flex-direction: column; align-items: center; text-align: center;
+    opacity: .2; filter: grayscale(.7); transform: scale(.92);
+    transition: opacity .4s, filter .4s, transform .5s cubic-bezier(.3,1.6,.5,1);
+  }
+  .mk-col.on { opacity: 1; filter: none; transform: scale(1); }
+  .mk-fig { position: relative; width: calc(340 * var(--k) * var(--u)); aspect-ratio: 1; }
+  .mk-fig .disc { position: absolute; inset: 0; border-radius: 50%; background: var(--ring-inner); transition: background .4s; }
+  .mk-col.on .disc { background: var(--ring-outer); box-shadow: inset 0 0 0 calc(6 * var(--k) * var(--u)) var(--ring-inner); }
+  .mk-fig svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .mk-fig .num {
+    position: absolute; left: calc(-4 * var(--k) * var(--u)); top: calc(-4 * var(--k) * var(--u));
+    width: calc(68 * var(--k) * var(--u)); aspect-ratio: 1; border-radius: 50%;
+    display: grid; place-items: center; background: var(--lantern); color: var(--cream);
+    font-size: calc(42 * var(--k) * var(--u)); font-weight: 700; line-height: 1;
+    box-shadow: 0 0 0 calc(6 * var(--k) * var(--u)) var(--night);
+  }
+  .mk-col .head { margin-top: calc(20 * var(--u)); font-size: calc(46 * var(--t) * var(--u)); font-weight: 700; line-height: 1.1; white-space: nowrap; }
+
+  /* Lantern paper lights up warm once the LED is in; .lit on the slide lights every pictured lantern */
+  .mk .paper { fill: #A8D65A; transition: fill .6s, filter .6s; }
+  .mk .rib { stroke: #7FB33E; }
+  .mk-col.glow .paper, .mk.lit .paper { fill: #E4F59A; filter: drop-shadow(0 0 14px rgba(255, 233, 166, .95)); }
+  .mk .led-dome { fill: #E8EAF6; transition: fill .4s, filter .4s; }
+  .mk .rays { opacity: 0; transition: opacity .4s; }
+  .mk-col.on .led-dome { fill: #FFE9A6; filter: drop-shadow(0 0 10px rgba(255, 212, 94, .95)); transition-delay: .9s; }
+  .mk-col.on .rays { opacity: 1; transition-delay: .9s; }
+
+  .mk-col.on .pop { animation: pop-open .7s cubic-bezier(.3,1.5,.5,1) .2s both; }
+  @keyframes pop-open {
+    0% { transform: scaleY(.18); }
+    100% { transform: scaleY(1); }
+  }
+  /* Wire and light drop in through the top opening, then fade so they read as inside the paper */
+  .mk .wire, .mk .wire-inside { opacity: .5; }
+  .mk .hook { opacity: 1; }
+  .mk .led-in { opacity: .65; }
+  .mk-col.on .wire { animation: drop-inside 1.3s ease-out .2s both; --drop: -170px; --inside: .5; }
+  .mk-col.on .led-in { animation: drop-inside 1.3s ease-out .2s both; --drop: -120px; --inside: .65; }
+  @keyframes drop-inside {
+    0% { transform: translateY(var(--drop)); opacity: 1; }
+    60% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(0); opacity: var(--inside); }
+  }
+  .mk-col.on .twist { animation: twist .5s ease-in-out .2s 2 both; }
+  @keyframes twist {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-14deg); }
+  }
+
+  .mk-bye { left: 0; right: 0; top: calc(770 * var(--u)); text-align: center; font-size: calc(56 * var(--u)); font-weight: 700; color: var(--moon); opacity: 0; }
+  .mk-bye .zh { font-family: "ZCOOL KuaiLe", "PingFang SC", "Microsoft YaHei", sans-serif; font-weight: 400; margin-left: calc(20 * var(--u)); }
+  .mk.lit .mk-bye { animation: fade-up .7s ease-out 1.2s both; }
+
+  @container (aspect-ratio < 1.6) {
+    .mk-title { left: calc(90 * var(--u)); font-size: calc(80 * var(--u)); }
+    .mk-row { --k: .77; --t: .82; top: calc(250 * var(--u)); }
+    .mk-bye { font-size: calc(50 * var(--u)); top: calc(730 * var(--u)); }
+  }
+
+  /* Outer element travels; inner element wiggles/hops, so the two transforms don't fight */
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    15% { transform: rotate(-6deg); }
+    30% { transform: rotate(5deg); }
+    45% { transform: rotate(-3deg); }
+    60% { transform: rotate(0deg); }
+  }
+  .mia.run-off { animation: run-off 1.4s cubic-bezier(.5,0,.9,.6) forwards; }
+  .mia.run-off .wiggle { animation: hop .28s ease-in-out 5; }
+  /* Travel a full stage width (cqw) so she clears the edge at any aspect ratio, then hide so nothing peeks back */
+  @keyframes run-off {
+    0% { transform: translateX(0); }
+    15% { transform: translateX(-6%) scaleX(.95); }
+    99% { transform: translateX(100cqw); visibility: visible; }
+    100% { transform: translateX(100cqw); visibility: hidden; }
+  }
+  @keyframes hop {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50% { transform: translateY(-12%) rotate(4deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mia .wiggle, .what.active *, .slide.active .pop-in, .s2-bunny.cheer, .s3-col.revealed .s3-fig svg { animation: none; }
+    .why-col, .rb-card, .mk-col { transition: none; }
+    .mk-col.on .pop, .mk-col.on .wire, .mk-col.on .led-in, .mk-col.on .twist, .mk.lit .mk-bye { animation: none; }
+    .mk.lit .mk-bye { opacity: 1; }
+    .rb-card.on .change, .rb-card.on .pestle, .rb-card.on .pestle-arm, .rb-card.on .mochi { animation: none; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="star" viewBox="0 0 40 40"><path d="M20 0 C22 12 28 18 40 20 C28 22 22 28 20 40 C18 28 12 22 0 20 C12 18 18 12 20 0 Z" fill="#FFE9A6"/></symbol>
+    <symbol id="mooncake" viewBox="0 0 200 200">
+      <g fill="#D4882E">
+        <circle cx="100" cy="100" r="78"/>
+        <circle cx="178" cy="100" r="22"/><circle cx="167.5" cy="139" r="22"/><circle cx="139" cy="167.5" r="22"/>
+        <circle cx="100" cy="178" r="22"/><circle cx="61" cy="167.5" r="22"/><circle cx="32.5" cy="139" r="22"/>
+        <circle cx="22" cy="100" r="22"/><circle cx="32.5" cy="61" r="22"/><circle cx="61" cy="32.5" r="22"/>
+        <circle cx="100" cy="22" r="22"/><circle cx="139" cy="32.5" r="22"/><circle cx="167.5" cy="61" r="22"/>
+      </g>
+      <circle cx="100" cy="100" r="62" fill="#E9A848" stroke="#B96F1E" stroke-width="4"/>
+      <g fill="none" stroke="#B96F1E" stroke-width="5">
+        <ellipse cx="100" cy="72" rx="14" ry="24"/><ellipse cx="100" cy="128" rx="14" ry="24"/>
+        <ellipse cx="72" cy="100" rx="24" ry="14"/><ellipse cx="128" cy="100" rx="24" ry="14"/>
+      </g>
+      <circle cx="100" cy="100" r="10" fill="#B96F1E"/>
+    </symbol>
+    <symbol id="lantern-body" viewBox="0 0 160 160">
+      <rect x="54" y="0" width="52" height="16" rx="6" fill="#E9B949"/>
+      <ellipse cx="80" cy="84" rx="74" ry="68" fill="#E8452F"/>
+      <ellipse cx="80" cy="84" rx="46" ry="68" fill="none" stroke="#E9B949" stroke-opacity="0.6" stroke-width="3"/>
+      <ellipse cx="80" cy="84" rx="16" ry="68" fill="none" stroke="#E9B949" stroke-opacity="0.6" stroke-width="3"/>
+      <rect x="54" y="146" width="52" height="16" rx="6" fill="#E9B949"/>
+    </symbol>
+    <symbol id="bunny" viewBox="0 0 260 300">
+      <ellipse cx="95" cy="70" rx="20" ry="62" transform="rotate(-12 95 70)" fill="#FFF8EC"/>
+      <ellipse cx="95" cy="76" rx="9" ry="42" transform="rotate(-12 95 76)" fill="#F7A9A2"/>
+      <ellipse cx="140" cy="66" rx="20" ry="62" transform="rotate(10 140 66)" fill="#FFF8EC"/>
+      <ellipse cx="140" cy="72" rx="9" ry="42" transform="rotate(10 140 72)" fill="#F7A9A2"/>
+      <circle cx="228" cy="250" r="20" fill="#FFF8EC"/>
+      <ellipse cx="150" cy="235" rx="82" ry="62" fill="#F1E6D4"/>
+      <ellipse cx="100" cy="285" rx="34" ry="14" fill="#FFF8EC"/>
+      <circle cx="118" cy="150" r="62" fill="#FFF8EC"/>
+      <circle cx="96" cy="144" r="7" fill="#1B1D4D"/>
+      <circle cx="138" cy="144" r="7" fill="#1B1D4D"/>
+      <circle cx="80" cy="168" r="10" fill="#F7A9A2" fill-opacity="0.7"/>
+      <circle cx="154" cy="168" r="10" fill="#F7A9A2" fill-opacity="0.7"/>
+      <ellipse cx="117" cy="162" rx="6" ry="4" fill="#E9837A"/>
+      <path d="M108 171 q5 7 9 0 q4 7 9 0" fill="none" stroke="#1B1D4D" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main class="stage" id="stage">
+
+  <!-- Slide 1: Welcome -->
+  <section class="slide" id="welcome">
+    <div class="abs ring-outer"></div>
+    <div class="abs ring-inner"></div>
+
+    <!-- Stars anchored to the left edge stay put; ones near the moon are anchored right so they travel with it -->
+    <svg class="abs" style="left:calc(56*var(--u));top:calc(330*var(--u));width:calc(26*var(--u));height:calc(26*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="left:calc(760*var(--u));top:calc(120*var(--u));width:calc(22*var(--u));height:calc(22*var(--u))"><use href="#star"/></svg>
+    <svg class="abs star-near-moon" style="left:calc(880*var(--u));top:calc(250*var(--u));width:calc(28*var(--u));height:calc(28*var(--u))"><use href="#star"/></svg>
+    <svg class="abs star-near-moon" style="left:calc(720*var(--u));top:calc(400*var(--u));width:calc(22*var(--u));height:calc(22*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(864*var(--u));top:calc(90*var(--u));width:calc(36*var(--u));height:calc(36*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(200*var(--u));top:calc(60*var(--u));width:calc(40*var(--u));height:calc(40*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(70*var(--u));top:calc(520*var(--u));width:calc(30*var(--u));height:calc(30*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(854*var(--u));top:calc(700*var(--u));width:calc(26*var(--u));height:calc(26*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(128*var(--u));top:calc(290*var(--u));width:calc(22*var(--u));height:calc(22*var(--u))"><use href="#star"/></svg>
+
+    <div class="abs" style="left:calc(940*var(--u));top:calc(160*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+    <div class="abs" style="left:calc(700*var(--u));top:calc(250*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+    <div class="abs" style="left:calc(820*var(--u));top:calc(60*var(--u));width:calc(10*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+    <div class="abs" style="left:calc(64*var(--u));top:calc(760*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+    <div class="abs" style="right:calc(50*var(--u));top:calc(400*var(--u));width:calc(10*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+    <div class="abs" style="right:calc(32*var(--u));top:calc(700*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+
+    <svg class="abs moon" viewBox="0 0 620 620" aria-hidden="true">
+      <circle cx="310" cy="310" r="310" fill="#FFD45E"/>
+      <g fill="#F5C04A">
+        <circle cx="190" cy="200" r="58"/><circle cx="420" cy="150" r="34"/><circle cx="450" cy="380" r="70"/>
+        <circle cx="240" cy="430" r="40"/><circle cx="330" cy="270" r="22"/>
+      </g>
+    </svg>
+
+    <svg class="abs clouds clouds-back" viewBox="0 0 1920 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 300 V160 a110 110 0 0 1 220 0 a80 80 0 0 1 160 0 a140 140 0 0 1 280 0 a90 90 0 0 1 180 0 a120 120 0 0 1 240 0 a70 70 0 0 1 140 0 a130 130 0 0 1 260 0 a100 100 0 0 1 200 0 a120 120 0 0 1 240 0 V300 Z" fill="#343A86"/>
+    </svg>
+
+    <svg class="abs bunny" aria-hidden="true"><use href="#bunny"/></svg>
+    <svg class="abs mooncake-big" aria-hidden="true"><use href="#mooncake"/></svg>
+    <svg class="abs mooncake-small" aria-hidden="true"><use href="#mooncake"/></svg>
+
+    <svg class="abs clouds clouds-front" viewBox="0 0 1920 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 220 V140 a90 90 0 0 1 180 0 a130 130 0 0 1 260 0 a70 70 0 0 1 140 0 a110 110 0 0 1 220 0 a100 100 0 0 1 200 0 a80 80 0 0 1 160 0 a120 120 0 0 1 240 0 a60 60 0 0 1 120 0 a100 100 0 0 1 200 0 a100 100 0 0 1 200 0 V220 Z" fill="#4A52A8"/>
+    </svg>
+
+    <!-- Lanterns: string length differs per lantern, body + tassel shared -->
+    <svg class="abs" viewBox="0 0 160 340" style="left:calc(130*var(--u));top:0;width:calc(150*var(--u));height:calc(319*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="90" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="90" width="160" height="162"/>
+      <rect x="78" y="252" width="4" height="26" fill="#E9B949"/><path d="M70 278 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="278" r="8" fill="#E9B949"/>
+    </svg>
+    <svg class="abs" viewBox="0 0 160 290" style="left:calc(340*var(--u));top:0;width:calc(110*var(--u));height:calc(199*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="40" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="40" width="160" height="162"/>
+      <rect x="78" y="202" width="4" height="26" fill="#E9B949"/><path d="M70 228 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="228" r="8" fill="#E9B949"/>
+    </svg>
+    <svg class="abs" viewBox="0 0 160 420" style="left:calc(510*var(--u));top:0;width:calc(130*var(--u));height:calc(341*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="170" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="170" width="160" height="162"/>
+      <rect x="78" y="332" width="4" height="26" fill="#E9B949"/><path d="M70 358 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="358" r="8" fill="#E9B949"/>
+    </svg>
+    <svg class="abs" viewBox="0 0 160 280" style="right:calc(40*var(--u));top:0;width:calc(110*var(--u));height:calc(193*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="30" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="30" width="160" height="162"/>
+      <rect x="78" y="192" width="4" height="26" fill="#E9B949"/><path d="M70 218 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="218" r="8" fill="#E9B949"/>
+    </svg>
+
+    <div class="abs title">
+      <div class="zh" lang="zh-Hans">中秋节</div>
+      <h1>Mid-Autumn<br>Festival</h1>
+      <div class="sub">The Moon Festival</div>
+    </div>
+
+    <div class="abs mia" id="mia"><div class="wiggle"><img src="assets/mia-sticker.png" alt="Mia"></div></div>
+  </section>
+
+  <!-- Slide 2: What Is It? -->
+  <section class="slide what" id="what">
+    <div class="abs cx ring" style="--dx:585;--y:540;--s:580;background:var(--ring-outer)" aria-hidden="true"></div>
+    <div class="abs cx ring" style="--dx:585;--y:540;--s:510;background:var(--ring-inner)" aria-hidden="true"></div>
+
+    <svg class="abs cx" style="--dx:95;--y:90;width:calc(28*var(--k)*var(--u));height:calc(28*var(--k)*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs cx" style="--dx:315;--y:180;width:calc(22*var(--k)*var(--u));height:calc(22*var(--k)*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs cx" style="--dx:-115;--y:320;width:calc(22*var(--k)*var(--u));height:calc(22*var(--k)*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs cx" style="--dx:-755;--y:350;width:calc(20*var(--k)*var(--u));height:calc(20*var(--k)*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs cx" style="--dx:-955;--y:640;width:calc(22*var(--k)*var(--u));height:calc(22*var(--k)*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs cx" style="--dx:-305;--y:690;width:calc(20*var(--k)*var(--u));height:calc(20*var(--k)*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs cx" style="--dx:255;--y:690;width:calc(24*var(--k)*var(--u));height:calc(24*var(--k)*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs cx" style="--dx:555;--y:70;width:calc(26*var(--k)*var(--u));height:calc(26*var(--k)*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+
+    <div class="abs cx" style="--dx:-445;--y:340;width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+    <div class="abs cx" style="--dx:145;--y:330;width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+    <div class="abs cx" style="--dx:-605;--y:690;width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+    <div class="abs cx" style="--dx:-969;--y:420;width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+    <div class="abs cx" style="--dx:-5;--y:720;width:calc(10*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+    <div class="abs cx" style="--dx:435;--y:120;width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+
+    <svg class="abs clouds clouds-back" viewBox="0 0 1920 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 300 V160 a110 110 0 0 1 220 0 a80 80 0 0 1 160 0 a140 140 0 0 1 280 0 a90 90 0 0 1 180 0 a120 120 0 0 1 240 0 a70 70 0 0 1 140 0 a130 130 0 0 1 260 0 a100 100 0 0 1 200 0 a120 120 0 0 1 240 0 V300 Z" fill="#343A86"/>
+    </svg>
+    <svg class="abs clouds clouds-front" viewBox="0 0 1920 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 220 V140 a90 90 0 0 1 180 0 a130 130 0 0 1 260 0 a70 70 0 0 1 140 0 a110 110 0 0 1 220 0 a100 100 0 0 1 200 0 a80 80 0 0 1 160 0 a120 120 0 0 1 240 0 a60 60 0 0 1 120 0 a100 100 0 0 1 200 0 a100 100 0 0 1 200 0 V220 Z" fill="#4A52A8"/>
+    </svg>
+
+    <div class="abs cx phase" style="--dx:-825;--y:540;--s:100;--i:0">
+      <svg role="img" aria-label="Thin crescent moon" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="50" fill="#2C3072"/>
+        <path d="M50 0 A50 50 0 0 1 50 100 A36 50 0 0 0 50 0 Z" fill="#FFD45E"/>
+      </svg>
+    </div>
+    <div class="abs cx phase" style="--dx:-565;--y:540;--s:140;--i:1">
+      <svg role="img" aria-label="Wider crescent moon" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="50" fill="#2C3072"/>
+        <path d="M50 0 A50 50 0 0 1 50 100 A18 50 0 0 0 50 0 Z" fill="#FFD45E"/>
+      </svg>
+    </div>
+    <div class="abs cx phase" style="--dx:-260;--y:540;--s:190;--i:2">
+      <svg role="img" aria-label="Half moon" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="50" fill="#2C3072"/>
+        <path d="M50 0 A50 50 0 0 1 50 100 Z" fill="#FFD45E"/>
+      </svg>
+    </div>
+    <div class="abs cx phase" style="--dx:100;--y:540;--s:250;--i:3">
+      <svg role="img" aria-label="Nearly full moon" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="50" fill="#2C3072"/>
+        <path d="M50 0 A50 50 0 0 1 50 100 A26 50 0 0 1 50 0 Z" fill="#FFD45E"/>
+        <circle cx="68" cy="34" r="7" fill="#F5C04A"/><circle cx="74" cy="62" r="10" fill="#F5C04A"/><circle cx="50" cy="74" r="5" fill="#F5C04A"/>
+      </svg>
+    </div>
+    <div class="abs cx phase full" style="--dx:585;--y:540;--s:440">
+      <svg role="img" aria-label="Giant full moon" viewBox="0 0 620 620">
+        <circle cx="310" cy="310" r="310" fill="#FFD45E"/>
+        <g fill="#F5C04A">
+          <circle cx="190" cy="200" r="58"/><circle cx="420" cy="150" r="34"/><circle cx="450" cy="380" r="70"/>
+          <circle cx="240" cy="430" r="40"/><circle cx="330" cy="270" r="22"/>
+        </g>
+      </svg>
+    </div>
+
+    <svg class="abs" viewBox="0 0 160 270" style="right:calc(120*var(--u));top:0;width:calc(100*var(--u));height:calc(169*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="20" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="20" width="160" height="162"/>
+      <rect x="78" y="182" width="4" height="26" fill="#E9B949"/><path d="M70 208 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="208" r="8" fill="#E9B949"/>
+    </svg>
+    <svg class="abs" viewBox="0 0 160 320" style="right:calc(20*var(--u));top:0;width:calc(90*var(--u));height:calc(180*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="70" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="70" width="160" height="162"/>
+      <rect x="78" y="232" width="4" height="26" fill="#E9B949"/><path d="M70 258 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="258" r="8" fill="#E9B949"/>
+    </svg>
+
+    <h1 class="abs what-title">What Is It?</h1>
+    <div class="abs what-line what-meaning"><b>Mid</b> = Middle &nbsp;·&nbsp; <b>Autumn</b> = Fall</div>
+    <div class="abs what-line what-night">The night of the biggest, roundest full moon</div>
+  </section>
+
+  <!-- Slide 3: Why & How We Celebrate -->
+  <section class="slide" id="why">
+    <svg class="abs" style="left:calc(60*var(--u));top:calc(200*var(--u));width:calc(24*var(--u));height:calc(24*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(330*var(--u));top:calc(70*var(--u));width:calc(30*var(--u));height:calc(30*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(260*var(--u));top:calc(170*var(--u));width:calc(20*var(--u));height:calc(20*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs" style="left:calc(40*var(--u));top:calc(700*var(--u));width:calc(20*var(--u));height:calc(20*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(40*var(--u));top:calc(660*var(--u));width:calc(22*var(--u));height:calc(22*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <div class="abs" style="left:calc(30*var(--u));top:calc(450*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+    <div class="abs" style="right:calc(30*var(--u));top:calc(330*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+    <div class="abs" style="left:calc(980*var(--u));top:calc(120*var(--u));width:calc(10*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+
+    <svg class="abs clouds clouds-back" viewBox="0 0 1920 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 300 V160 a110 110 0 0 1 220 0 a80 80 0 0 1 160 0 a140 140 0 0 1 280 0 a90 90 0 0 1 180 0 a120 120 0 0 1 240 0 a70 70 0 0 1 140 0 a130 130 0 0 1 260 0 a100 100 0 0 1 200 0 a120 120 0 0 1 240 0 V300 Z" fill="#343A86"/>
+    </svg>
+    <svg class="abs clouds clouds-front" viewBox="0 0 1920 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 220 V140 a90 90 0 0 1 180 0 a130 130 0 0 1 260 0 a70 70 0 0 1 140 0 a110 110 0 0 1 220 0 a100 100 0 0 1 200 0 a80 80 0 0 1 160 0 a120 120 0 0 1 240 0 a60 60 0 0 1 120 0 a100 100 0 0 1 200 0 a100 100 0 0 1 200 0 V220 Z" fill="#4A52A8"/>
+    </svg>
+
+    <div class="abs why-row">
+      <div class="why-col" data-why>
+        <div class="why-fig">
+          <div class="disc" aria-hidden="true"></div>
+          <svg role="img" aria-label="Golden rice stalks behind a basket of pomelo, persimmons and a pear" viewBox="0 0 400 440">
+            <path d="M95 300 Q95 190 77 130" fill="none" stroke="#C98A26" stroke-width="6" stroke-linecap="round"/>
+            <ellipse cx="68" cy="138" rx="6" ry="11" transform="rotate(-25 68 138)" fill="#E0A63A"/>
+            <ellipse cx="86" cy="144" rx="6" ry="11" transform="rotate(25 86 144)" fill="#E0A63A"/>
+            <ellipse cx="72" cy="154" rx="6" ry="11" transform="rotate(-25 72 154)" fill="#E0A63A"/>
+            <ellipse cx="90" cy="160" rx="6" ry="11" transform="rotate(25 90 160)" fill="#E0A63A"/>
+            <ellipse cx="76" cy="170" rx="6" ry="11" transform="rotate(-25 76 170)" fill="#E0A63A"/>
+            <ellipse cx="94" cy="176" rx="6" ry="11" transform="rotate(25 94 176)" fill="#E0A63A"/>
+            <ellipse cx="80" cy="186" rx="6" ry="11" transform="rotate(-25 80 186)" fill="#E0A63A"/>
+            <ellipse cx="98" cy="192" rx="6" ry="11" transform="rotate(25 98 192)" fill="#E0A63A"/>
+            <path d="M130 300 Q130 160 122 100" fill="none" stroke="#C98A26" stroke-width="6" stroke-linecap="round"/>
+            <ellipse cx="113" cy="108" rx="6" ry="11" transform="rotate(-25 113 108)" fill="#E0A63A"/>
+            <ellipse cx="131" cy="114" rx="6" ry="11" transform="rotate(25 131 114)" fill="#E0A63A"/>
+            <ellipse cx="115" cy="124" rx="6" ry="11" transform="rotate(-25 115 124)" fill="#E0A63A"/>
+            <ellipse cx="133" cy="130" rx="6" ry="11" transform="rotate(25 133 130)" fill="#E0A63A"/>
+            <ellipse cx="117" cy="140" rx="6" ry="11" transform="rotate(-25 117 140)" fill="#E0A63A"/>
+            <ellipse cx="135" cy="146" rx="6" ry="11" transform="rotate(25 135 146)" fill="#E0A63A"/>
+            <ellipse cx="118" cy="156" rx="6" ry="11" transform="rotate(-25 118 156)" fill="#E0A63A"/>
+            <ellipse cx="136" cy="162" rx="6" ry="11" transform="rotate(25 136 162)" fill="#E0A63A"/>
+            <path d="M165 300 Q165 144 169 84" fill="none" stroke="#C98A26" stroke-width="6" stroke-linecap="round"/>
+            <ellipse cx="160" cy="92" rx="6" ry="11" transform="rotate(-25 160 92)" fill="#E0A63A"/>
+            <ellipse cx="178" cy="98" rx="6" ry="11" transform="rotate(25 178 98)" fill="#E0A63A"/>
+            <ellipse cx="159" cy="108" rx="6" ry="11" transform="rotate(-25 159 108)" fill="#E0A63A"/>
+            <ellipse cx="177" cy="114" rx="6" ry="11" transform="rotate(25 177 114)" fill="#E0A63A"/>
+            <ellipse cx="158" cy="124" rx="6" ry="11" transform="rotate(-25 158 124)" fill="#E0A63A"/>
+            <ellipse cx="176" cy="130" rx="6" ry="11" transform="rotate(25 176 130)" fill="#E0A63A"/>
+            <ellipse cx="157" cy="140" rx="6" ry="11" transform="rotate(-25 157 140)" fill="#E0A63A"/>
+            <ellipse cx="175" cy="146" rx="6" ry="11" transform="rotate(25 175 146)" fill="#E0A63A"/>
+            <path d="M235 300 Q235 144 231 84" fill="none" stroke="#C98A26" stroke-width="6" stroke-linecap="round"/>
+            <ellipse cx="222" cy="92" rx="6" ry="11" transform="rotate(-25 222 92)" fill="#E0A63A"/>
+            <ellipse cx="240" cy="98" rx="6" ry="11" transform="rotate(25 240 98)" fill="#E0A63A"/>
+            <ellipse cx="223" cy="108" rx="6" ry="11" transform="rotate(-25 223 108)" fill="#E0A63A"/>
+            <ellipse cx="241" cy="114" rx="6" ry="11" transform="rotate(25 241 114)" fill="#E0A63A"/>
+            <ellipse cx="224" cy="124" rx="6" ry="11" transform="rotate(-25 224 124)" fill="#E0A63A"/>
+            <ellipse cx="242" cy="130" rx="6" ry="11" transform="rotate(25 242 130)" fill="#E0A63A"/>
+            <ellipse cx="225" cy="140" rx="6" ry="11" transform="rotate(-25 225 140)" fill="#E0A63A"/>
+            <ellipse cx="243" cy="146" rx="6" ry="11" transform="rotate(25 243 146)" fill="#E0A63A"/>
+            <path d="M270 300 Q270 160 278 100" fill="none" stroke="#C98A26" stroke-width="6" stroke-linecap="round"/>
+            <ellipse cx="269" cy="108" rx="6" ry="11" transform="rotate(-25 269 108)" fill="#E0A63A"/>
+            <ellipse cx="287" cy="114" rx="6" ry="11" transform="rotate(25 287 114)" fill="#E0A63A"/>
+            <ellipse cx="267" cy="124" rx="6" ry="11" transform="rotate(-25 267 124)" fill="#E0A63A"/>
+            <ellipse cx="285" cy="130" rx="6" ry="11" transform="rotate(25 285 130)" fill="#E0A63A"/>
+            <ellipse cx="265" cy="140" rx="6" ry="11" transform="rotate(-25 265 140)" fill="#E0A63A"/>
+            <ellipse cx="283" cy="146" rx="6" ry="11" transform="rotate(25 283 146)" fill="#E0A63A"/>
+            <ellipse cx="264" cy="156" rx="6" ry="11" transform="rotate(-25 264 156)" fill="#E0A63A"/>
+            <ellipse cx="282" cy="162" rx="6" ry="11" transform="rotate(25 282 162)" fill="#E0A63A"/>
+            <path d="M305 300 Q305 190 323 130" fill="none" stroke="#C98A26" stroke-width="6" stroke-linecap="round"/>
+            <ellipse cx="314" cy="138" rx="6" ry="11" transform="rotate(-25 314 138)" fill="#E0A63A"/>
+            <ellipse cx="332" cy="144" rx="6" ry="11" transform="rotate(25 332 144)" fill="#E0A63A"/>
+            <ellipse cx="310" cy="154" rx="6" ry="11" transform="rotate(-25 310 154)" fill="#E0A63A"/>
+            <ellipse cx="328" cy="160" rx="6" ry="11" transform="rotate(25 328 160)" fill="#E0A63A"/>
+            <ellipse cx="306" cy="170" rx="6" ry="11" transform="rotate(-25 306 170)" fill="#E0A63A"/>
+            <ellipse cx="324" cy="176" rx="6" ry="11" transform="rotate(25 324 176)" fill="#E0A63A"/>
+            <ellipse cx="302" cy="186" rx="6" ry="11" transform="rotate(-25 302 186)" fill="#E0A63A"/>
+            <ellipse cx="320" cy="192" rx="6" ry="11" transform="rotate(25 320 192)" fill="#E0A63A"/>
+            <circle cx="204" cy="236" r="66" fill="#9CC65A"/><circle cx="182" cy="212" r="16" fill="#FFF8EC" fill-opacity=".45"/>
+            <path d="M204 172 q20 -26 44 -18 q-14 26 -44 18 Z" fill="#3D7A3A"/>
+            <path d="M140 206 q-4 -26 16 -30 q22 4 16 30 q14 22 -2 40 q-14 10 -28 0 q-16 -18 -2 -40 Z" fill="#C9B94A"/><path d="M156 176 l4 -14" stroke="#7A4A1F" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="118" cy="268" r="48" fill="#F28A1E"/><path d="M102 224 l16 8 l16 -8 l-6 14 l-10 2 l-10 -2 Z" fill="#3D7A3A"/>
+            <circle cx="288" cy="272" r="46" fill="#E8692C"/><path d="M272 230 l16 8 l16 -8 l-6 14 l-10 2 l-10 -2 Z" fill="#3D7A3A"/>
+            <path d="M56 304 L344 304 L314 414 Q200 430 86 414 Z" fill="#A0652E"/>
+            <g stroke="#7A4A1F" stroke-width="4" fill="none"><path d="M64 334 H336"/><path d="M72 364 H328"/><path d="M80 392 H320"/><path d="M88 304 L101 420"/><path d="M120 304 L130 420"/><path d="M152 304 L158 420"/><path d="M184 304 L186 420"/><path d="M216 304 L214 420"/><path d="M248 304 L242 420"/><path d="M280 304 L270 420"/><path d="M312 304 L299 420"/></g>
+            <rect x="44" y="290" width="312" height="28" rx="14" fill="#8A5426"/>
+          </svg>
+          <div class="num" aria-hidden="true">1</div>
+        </div>
+        <div class="why-text">
+          <div class="head">Harvest</div>
+          <div class="sub">Thank you for the food!</div>
+        </div>
+      </div>
+      <div class="why-col" data-why>
+        <div class="why-fig">
+          <div class="disc" aria-hidden="true"></div>
+          <svg role="img" aria-label="Grandparents, parents and a child standing together under a heart" viewBox="0 0 400 440">
+            <g transform="translate(64 420) scale(0.82)"><rect x="-20" y="-84" width="17" height="84" rx="7" fill="#3D68BD"/><rect x="3" y="-84" width="17" height="84" rx="7" fill="#3D68BD"/><ellipse cx="-12" cy="0" rx="15" ry="7" fill="#3A2A22"/><ellipse cx="12" cy="0" rx="15" ry="7" fill="#3A2A22"/><path d="M-40 -78 L-32 -186 Q0 -198 32 -186 L40 -78 Z" fill="#5E93E6"/><path d="M-33 -180 Q-56 -140 -50 -100" fill="none" stroke="#5E93E6" stroke-width="18" stroke-linecap="round"/><path d="M33 -180 Q56 -140 50 -100" fill="none" stroke="#5E93E6" stroke-width="18" stroke-linecap="round"/><circle cx="-50" cy="-94" r="10" fill="#F3C7A2"/><circle cx="50" cy="-94" r="10" fill="#F3C7A2"/><circle cx="0" cy="-232" r="44" fill="#F3C7A2"/><path d="M-45 -230 A45 45 0 0 1 45 -230 Q36 -254 0 -256 Q-36 -254 -45 -230 Z" fill="#C9C9C9"/><circle cx="-15" cy="-228" r="5" fill="#2A2340"/><circle cx="15" cy="-228" r="5" fill="#2A2340"/><circle cx="-27" cy="-214" r="8" fill="#F08C7E" fill-opacity=".55"/><circle cx="27" cy="-214" r="8" fill="#F08C7E" fill-opacity=".55"/><path d="M-10 -214 q10 9 20 0" fill="none" stroke="#2A2340" stroke-width="3.5" stroke-linecap="round"/><g fill="none" stroke="#2A2340" stroke-width="3"><circle cx="-15" cy="-228" r="11"/><circle cx="15" cy="-228" r="11"/><path d="M-4 -228 H4"/></g></g>
+            <g transform="translate(136 420) scale(0.78)"><rect x="-20" y="-84" width="17" height="84" rx="7" fill="#7C52B8"/><rect x="3" y="-84" width="17" height="84" rx="7" fill="#7C52B8"/><ellipse cx="-12" cy="0" rx="15" ry="7" fill="#3A2A22"/><ellipse cx="12" cy="0" rx="15" ry="7" fill="#3A2A22"/><path d="M-40 -78 L-32 -186 Q0 -198 32 -186 L40 -78 Z" fill="#9B6FD6"/><path d="M-33 -180 Q-56 -140 -50 -100" fill="none" stroke="#9B6FD6" stroke-width="18" stroke-linecap="round"/><path d="M33 -180 Q56 -140 50 -100" fill="none" stroke="#9B6FD6" stroke-width="18" stroke-linecap="round"/><circle cx="-50" cy="-94" r="10" fill="#EFBF96"/><circle cx="50" cy="-94" r="10" fill="#EFBF96"/><circle cx="0" cy="-232" r="44" fill="#EFBF96"/><path d="M-45 -230 A45 45 0 0 1 45 -230 Q36 -254 0 -256 Q-36 -254 -45 -230 Z" fill="#C9C9C9"/><circle cx="0" cy="-280" r="16" fill="#C9C9C9"/><circle cx="-15" cy="-228" r="5" fill="#2A2340"/><circle cx="15" cy="-228" r="5" fill="#2A2340"/><circle cx="-27" cy="-214" r="8" fill="#F08C7E" fill-opacity=".55"/><circle cx="27" cy="-214" r="8" fill="#F08C7E" fill-opacity=".55"/><path d="M-10 -214 q10 9 20 0" fill="none" stroke="#2A2340" stroke-width="3.5" stroke-linecap="round"/></g>
+            <g transform="translate(336 420) scale(0.92)"><rect x="-20" y="-84" width="17" height="84" rx="7" fill="#1F6F66"/><rect x="3" y="-84" width="17" height="84" rx="7" fill="#1F6F66"/><ellipse cx="-12" cy="0" rx="15" ry="7" fill="#3A2A22"/><ellipse cx="12" cy="0" rx="15" ry="7" fill="#3A2A22"/><path d="M-40 -78 L-32 -186 Q0 -198 32 -186 L40 -78 Z" fill="#2FA98C"/><path d="M-33 -180 Q-56 -140 -50 -100" fill="none" stroke="#2FA98C" stroke-width="18" stroke-linecap="round"/><path d="M33 -180 Q56 -140 50 -100" fill="none" stroke="#2FA98C" stroke-width="18" stroke-linecap="round"/><circle cx="-50" cy="-94" r="10" fill="#F1C49C"/><circle cx="50" cy="-94" r="10" fill="#F1C49C"/><circle cx="0" cy="-232" r="44" fill="#F1C49C"/><path d="M-45 -230 A45 45 0 0 1 45 -230 Q36 -254 0 -256 Q-36 -254 -45 -230 Z" fill="#2A2340"/><circle cx="-15" cy="-228" r="5" fill="#2A2340"/><circle cx="15" cy="-228" r="5" fill="#2A2340"/><circle cx="-27" cy="-214" r="8" fill="#F08C7E" fill-opacity=".55"/><circle cx="27" cy="-214" r="8" fill="#F08C7E" fill-opacity=".55"/><path d="M-10 -214 q10 9 20 0" fill="none" stroke="#2A2340" stroke-width="3.5" stroke-linecap="round"/></g>
+            <g transform="translate(266 420) scale(0.86)"><rect x="-48" y="-262" width="96" height="104" rx="40" fill="#2A2340"/><rect x="-20" y="-84" width="17" height="84" rx="7" fill="#C2334D"/><rect x="3" y="-84" width="17" height="84" rx="7" fill="#C2334D"/><ellipse cx="-12" cy="0" rx="15" ry="7" fill="#3A2A22"/><ellipse cx="12" cy="0" rx="15" ry="7" fill="#3A2A22"/><path d="M-40 -78 L-32 -186 Q0 -198 32 -186 L40 -78 Z" fill="#E65A8D"/><path d="M-33 -180 Q-56 -140 -50 -100" fill="none" stroke="#E65A8D" stroke-width="18" stroke-linecap="round"/><path d="M33 -180 Q56 -140 50 -100" fill="none" stroke="#E65A8D" stroke-width="18" stroke-linecap="round"/><circle cx="-50" cy="-94" r="10" fill="#F5CFAE"/><circle cx="50" cy="-94" r="10" fill="#F5CFAE"/><circle cx="0" cy="-232" r="44" fill="#F5CFAE"/><path d="M-45 -230 A45 45 0 0 1 45 -230 Q36 -254 0 -256 Q-36 -254 -45 -230 Z" fill="#2A2340"/><circle cx="-15" cy="-228" r="5" fill="#2A2340"/><circle cx="15" cy="-228" r="5" fill="#2A2340"/><circle cx="-27" cy="-214" r="8" fill="#F08C7E" fill-opacity=".55"/><circle cx="27" cy="-214" r="8" fill="#F08C7E" fill-opacity=".55"/><path d="M-10 -214 q10 9 20 0" fill="none" stroke="#2A2340" stroke-width="3.5" stroke-linecap="round"/></g>
+            <g transform="translate(200 420) scale(0.62)"><rect x="-20" y="-84" width="17" height="84" rx="7" fill="#C63A27"/><rect x="3" y="-84" width="17" height="84" rx="7" fill="#C63A27"/><ellipse cx="-12" cy="0" rx="15" ry="7" fill="#3A2A22"/><ellipse cx="12" cy="0" rx="15" ry="7" fill="#3A2A22"/><path d="M-40 -78 L-32 -186 Q0 -198 32 -186 L40 -78 Z" fill="#E8452F"/><path d="M-33 -180 Q-56 -140 -50 -100" fill="none" stroke="#E8452F" stroke-width="18" stroke-linecap="round"/><path d="M33 -180 Q56 -140 50 -100" fill="none" stroke="#E8452F" stroke-width="18" stroke-linecap="round"/><circle cx="-50" cy="-94" r="10" fill="#F3C7A2"/><circle cx="50" cy="-94" r="10" fill="#F3C7A2"/><circle cx="0" cy="-232" r="44" fill="#F3C7A2"/><path d="M-45 -230 A45 45 0 0 1 45 -230 Q36 -254 0 -256 Q-36 -254 -45 -230 Z" fill="#2A2340"/><circle cx="-46" cy="-244" r="14" fill="#2A2340"/><circle cx="46" cy="-244" r="14" fill="#2A2340"/><circle cx="-15" cy="-228" r="5" fill="#2A2340"/><circle cx="15" cy="-228" r="5" fill="#2A2340"/><circle cx="-27" cy="-214" r="8" fill="#F08C7E" fill-opacity=".55"/><circle cx="27" cy="-214" r="8" fill="#F08C7E" fill-opacity=".55"/><path d="M-10 -214 q10 9 20 0" fill="none" stroke="#2A2340" stroke-width="3.5" stroke-linecap="round"/></g>
+            <path d="M200 168 c-10 -16 -34 -12 -34 6 c0 16 20 26 34 38 c14 -12 34 -22 34 -38 c0 -18 -24 -22 -34 -6 Z" fill="#E8452F"/>
+          </svg>
+          <div class="num" aria-hidden="true">2</div>
+        </div>
+        <div class="why-text">
+          <div class="head">Families Together</div>
+          <div class="sub">Everyone comes home</div>
+        </div>
+      </div>
+      <div class="why-col" data-why>
+        <div class="why-fig">
+          <div class="disc" aria-hidden="true"></div>
+          <svg role="img" aria-label="A red lantern, a star lantern and two mooncakes on a plate" viewBox="0 0 400 440">
+            <rect x="108" y="-20" width="4" height="80" fill="#E9B949"/>
+            <use href="#lantern-body" x="40" y="60" width="140" height="142"/>
+            <rect x="108" y="200" width="4" height="20" fill="#E9B949"/><path d="M101 220 h18 l4 46 h-26 z" fill="#E8452F"/><circle cx="110" cy="220" r="7" fill="#E9B949"/>
+            <rect x="288" y="-20" width="4" height="60" fill="#E9B949"/>
+            <polygon points="290.0,38.0 313.5,97.6 377.5,101.6 328.0,142.4 344.1,204.4 290.0,170.0 235.9,204.4 252.0,142.4 202.5,101.6 266.5,97.6" fill="#E8452F" stroke="#C63A27" stroke-width="6" stroke-linejoin="round"/>
+            <polygon points="290.0,80.0 302.9,112.2 337.6,114.5 310.9,136.8 319.4,170.5 290.0,152.0 260.6,170.5 269.1,136.8 242.4,114.5 277.1,112.2" fill="#FFD45E"/>
+            <g stroke="#E9B949" stroke-width="5" stroke-linecap="round"><path d="M240 204 l-6 34"/><path d="M340 204 l6 34"/></g>
+            <ellipse cx="200" cy="384" rx="170" ry="38" fill="#FFF8EC"/><ellipse cx="200" cy="378" rx="140" ry="26" fill="none" stroke="#C9CCF5" stroke-width="4"/>
+            <use href="#mooncake" x="64" y="250" width="150" height="150"/>
+            <use href="#mooncake" x="196" y="262" width="136" height="136"/>
+          </svg>
+          <div class="num" aria-hidden="true">3</div>
+        </div>
+        <div class="why-text">
+          <div class="head">Mooncakes &amp; Lanterns</div>
+          <div class="sub">Round cakes, glowing lights</div>
+        </div>
+      </div>
+    </div>
+
+    <svg class="abs" viewBox="0 0 160 270" style="right:calc(120*var(--u));top:0;width:calc(100*var(--u));height:calc(169*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="20" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="20" width="160" height="162"/>
+      <rect x="78" y="182" width="4" height="26" fill="#E9B949"/><path d="M70 208 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="208" r="8" fill="#E9B949"/>
+    </svg>
+    <svg class="abs" viewBox="0 0 160 320" style="right:calc(20*var(--u));top:0;width:calc(90*var(--u));height:calc(180*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="70" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="70" width="160" height="162"/>
+      <rect x="78" y="232" width="4" height="26" fill="#E9B949"/><path d="M70 258 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="258" r="8" fill="#E9B949"/>
+    </svg>
+
+    <h1 class="abs why-title">Why &amp; How Do We Celebrate?</h1>
+  </section>
+
+  <!-- Slide 4: Who Celebrates? -->
+  <section class="slide" id="who">
+    <div class="abs s2-ring"></div>
+
+    <svg class="abs" style="left:calc(60*var(--u));top:calc(300*var(--u));width:calc(26*var(--u));height:calc(26*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="left:calc(700*var(--u));top:calc(110*var(--u));width:calc(30*var(--u));height:calc(30*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="left:calc(800*var(--u));top:calc(250*var(--u));width:calc(22*var(--u));height:calc(22*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="left:calc(560*var(--u));top:calc(180*var(--u));width:calc(24*var(--u));height:calc(24*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(22*var(--u));top:calc(70*var(--u));width:calc(28*var(--u));height:calc(28*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="left:calc(840*var(--u));top:calc(110*var(--u));width:calc(34*var(--u));height:calc(34*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="left:calc(60*var(--u));top:calc(620*var(--u));width:calc(22*var(--u));height:calc(22*var(--u))"><use href="#star"/></svg>
+
+    <div class="abs" style="left:calc(640*var(--u));top:calc(300*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+    <div class="abs" style="left:calc(40*var(--u));top:calc(120*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+    <div class="abs" style="left:calc(760*var(--u));top:calc(60*var(--u));width:calc(10*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+    <div class="abs" style="left:calc(480*var(--u));top:calc(300*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+    <div class="abs" style="right:calc(16*var(--u));top:calc(300*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+
+    <svg class="abs clouds clouds-back" viewBox="0 0 1920 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 300 V160 a110 110 0 0 1 220 0 a80 80 0 0 1 160 0 a140 140 0 0 1 280 0 a90 90 0 0 1 180 0 a120 120 0 0 1 240 0 a70 70 0 0 1 140 0 a130 130 0 0 1 260 0 a100 100 0 0 1 200 0 a120 120 0 0 1 240 0 V300 Z" fill="#343A86"/>
+    </svg>
+
+    <div class="abs s2-map">
+      <img src="assets/map-asia.svg" alt="Map of East and Southeast Asia with China, Taiwan, Vietnam, Korea, Japan, Malaysia and Singapore highlighted in gold">
+      <div class="sg-dot" aria-hidden="true"></div>
+      <div class="label big pop-in" style="--x:280;--y:338;--i:0">China</div>
+      <div class="label pop-in" style="--x:620;--y:508;--i:1">Taiwan</div>
+      <div class="label pop-in" style="--x:486;--y:630;--i:2">Vietnam</div>
+      <div class="label pop-in" style="--x:708;--y:302;--i:3">Korea</div>
+      <div class="label pop-in" style="--x:776;--y:408;--i:4">Japan</div>
+      <div class="label pop-in" style="--x:342;--y:812;--i:5">Singapore</div>
+      <div class="label pop-in" style="--x:462;--y:690;--i:6">Malaysia</div>
+    </div>
+
+    <svg class="abs s2-bunny" id="s2-bunny" aria-hidden="true"><use href="#bunny"/></svg>
+
+    <svg class="abs clouds clouds-front" viewBox="0 0 1920 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 220 V140 a90 90 0 0 1 180 0 a130 130 0 0 1 260 0 a70 70 0 0 1 140 0 a110 110 0 0 1 220 0 a100 100 0 0 1 200 0 a80 80 0 0 1 160 0 a120 120 0 0 1 240 0 a60 60 0 0 1 120 0 a100 100 0 0 1 200 0 a100 100 0 0 1 200 0 V220 Z" fill="#4A52A8"/>
+    </svg>
+
+    <svg class="abs" viewBox="0 0 160 310" style="left:calc(150*var(--u));top:0;width:calc(130*var(--u));height:calc(252*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="60" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="60" width="160" height="162"/>
+      <rect x="78" y="222" width="4" height="26" fill="#E9B949"/><path d="M70 248 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="248" r="8" fill="#E9B949"/>
+    </svg>
+    <svg class="abs" viewBox="0 0 160 380" style="left:calc(330*var(--u));top:0;width:calc(100*var(--u));height:calc(238*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="130" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="130" width="160" height="162"/>
+      <rect x="78" y="292" width="4" height="26" fill="#E9B949"/><path d="M70 318 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="318" r="8" fill="#E9B949"/>
+    </svg>
+
+    <div class="abs s2-title">
+      <h1>Who<br>Celebrates?</h1>
+      <div class="sub">…and Asian families around the world</div>
+    </div>
+
+    <div class="abs s2-bubble" id="s2-bubble">Raise your hand if<br>your family celebrates!</div>
+  </section>
+
+  <!-- Slide 5: Same Holiday, Different Names -->
+  <section class="slide s3" id="names">
+    <svg class="abs" style="right:calc(390*var(--u));top:calc(60*var(--u));width:calc(30*var(--u));height:calc(30*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(320*var(--u));top:calc(150*var(--u));width:calc(20*var(--u));height:calc(20*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="left:calc(50*var(--u));top:calc(210*var(--u));width:calc(24*var(--u));height:calc(24*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="left:calc(40*var(--u));top:calc(640*var(--u));width:calc(20*var(--u));height:calc(20*var(--u))"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(38*var(--u));top:calc(640*var(--u));width:calc(22*var(--u));height:calc(22*var(--u))"><use href="#star"/></svg>
+    <svg class="abs s3-gap" style="--dx:-452;--y:250;width:calc(24*var(--u));height:calc(24*var(--u))"><use href="#star"/></svg>
+    <svg class="abs s3-gap" style="--dx:-11;--y:600;width:calc(22*var(--u));height:calc(22*var(--u))"><use href="#star"/></svg>
+    <svg class="abs s3-gap" style="--dx:427;--y:250;width:calc(26*var(--u));height:calc(26*var(--u))"><use href="#star"/></svg>
+    <div class="abs s3-gap" style="--dx:-444;--y:560;width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+    <div class="abs s3-gap" style="--dx:-4;--y:240;width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+    <div class="abs s3-gap" style="--dx:436;--y:580;width:calc(10*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+    <div class="abs" style="right:calc(32*var(--u));top:calc(300*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+    <div class="abs" style="left:calc(30*var(--u));top:calc(420*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)"></div>
+
+    <svg class="abs clouds clouds-back" viewBox="0 0 1920 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 300 V160 a110 110 0 0 1 220 0 a80 80 0 0 1 160 0 a140 140 0 0 1 280 0 a90 90 0 0 1 180 0 a120 120 0 0 1 240 0 a70 70 0 0 1 140 0 a130 130 0 0 1 260 0 a100 100 0 0 1 200 0 a120 120 0 0 1 240 0 V300 Z" fill="#343A86"/>
+    </svg>
+    <svg class="abs clouds clouds-front" viewBox="0 0 1920 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 220 V140 a90 90 0 0 1 180 0 a130 130 0 0 1 260 0 a70 70 0 0 1 140 0 a110 110 0 0 1 220 0 a100 100 0 0 1 200 0 a80 80 0 0 1 160 0 a120 120 0 0 1 240 0 a60 60 0 0 1 120 0 a100 100 0 0 1 200 0 a100 100 0 0 1 200 0 V220 Z" fill="#4A52A8"/>
+    </svg>
+
+    <div class="abs s3-row">
+      <div class="s3-col" data-col>
+        <div class="s3-fig">
+          <div class="disc" aria-hidden="true"></div>
+          <svg role="img" aria-label="Cartoon child in a red Chinese tang jacket" viewBox="0 0 280 440">
+          <rect x="100" y="310" width="36" height="92" rx="8" fill="#F2B93B"></rect>
+          <rect x="144" y="310" width="36" height="92" rx="8" fill="#F2B93B"></rect>
+          <ellipse cx="116" cy="406" rx="24" ry="11" fill="#C63A27"></ellipse>
+          <ellipse cx="164" cy="406" rx="24" ry="11" fill="#C63A27"></ellipse>
+          <circle cx="64" cy="280" r="13" fill="#F3C7A2"></circle>
+          <circle cx="216" cy="280" r="13" fill="#F3C7A2"></circle>
+          <path d="M94 180 L186 180 L200 322 L80 322 Z" fill="#E8452F"></path>
+          <path d="M96 184 L52 268 L80 284 L108 226 Z" fill="#E8452F"></path>
+          <path d="M184 184 L228 268 L200 284 L172 226 Z" fill="#E8452F"></path>
+          <rect x="138" y="190" width="4" height="132" fill="#C63A27"></rect>
+          <rect x="120" y="206" width="40" height="7" rx="3.5" fill="#FFD45E"></rect>
+          <rect x="120" y="240" width="40" height="7" rx="3.5" fill="#FFD45E"></rect>
+          <rect x="120" y="274" width="40" height="7" rx="3.5" fill="#FFD45E"></rect>
+          <circle cx="140" cy="209.5" r="6" fill="#F2B93B"></circle>
+          <circle cx="140" cy="243.5" r="6" fill="#F2B93B"></circle>
+          <circle cx="140" cy="277.5" r="6" fill="#F2B93B"></circle>
+          <rect x="120" y="174" width="40" height="18" rx="6" fill="#C63A27"></rect>
+          <circle cx="140" cy="120" r="58" fill="#F3C7A2"></circle>
+          <path d="M80 122 A60 60 0 0 1 200 122 Q188 90 140 88 Q92 90 80 122 Z" fill="#2A2340"></path>
+          <circle cx="120" cy="126" r="6" fill="#2A2340"></circle>
+          <circle cx="160" cy="126" r="6" fill="#2A2340"></circle>
+          <circle cx="104" cy="142" r="9" fill="#F08C7E" fill-opacity="0.55"></circle>
+          <circle cx="176" cy="142" r="9" fill="#F08C7E" fill-opacity="0.55"></circle>
+          <path d="M128 144 q12 11 24 0" fill="none" stroke="#2A2340" stroke-width="3.5" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div class="s3-text">
+          <div class="country"><span class="real">China</span><span class="q">?</span></div>
+          <div class="name">Zhōngqiū Jié</div>
+          <div class="say"><span class="lbl">Say:</span> jong-chyoh jyeh</div>
+        </div>
+      </div>
+      <div class="s3-col" data-col>
+        <div class="s3-fig">
+          <div class="disc" aria-hidden="true"></div>
+          <svg role="img" aria-label="Cartoon child in a purple Vietnamese ao dai and conical hat" viewBox="0 0 280 440">
+          <path d="M84 112 L84 236 Q84 248 96 248 L184 248 Q196 248 196 236 L196 112 Z" fill="#2A2340"></path>
+          <path d="M82 252 L198 252 L212 404 L148 404 L140 300 L132 404 L68 404 Z" fill="#FFF8EC"></path>
+          <ellipse cx="100" cy="410" rx="22" ry="9" fill="#C96A4A"></ellipse>
+          <ellipse cx="180" cy="410" rx="22" ry="9" fill="#C96A4A"></ellipse>
+          <circle cx="70" cy="284" r="12" fill="#EFBF96"></circle>
+          <circle cx="210" cy="284" r="12" fill="#EFBF96"></circle>
+          <path d="M100 178 L180 178 L186 252 L180 388 L100 388 L94 252 Z" fill="#9B6FD6"></path>
+          <path d="M102 184 L62 274 L84 284 L114 224 Z" fill="#9B6FD6"></path>
+          <path d="M178 184 L218 274 L196 284 L166 224 Z" fill="#9B6FD6"></path>
+          <rect x="124" y="174" width="32" height="16" rx="6" fill="#7C52B8"></rect>
+          <path d="M132 190 L104 212" fill="none" stroke="#7C52B8" stroke-width="4" stroke-linecap="round"></path>
+          <circle cx="140" cy="120" r="58" fill="#EFBF96"></circle>
+          <path d="M82 118 A60 60 0 0 1 198 118 Q170 100 140 100 Q110 100 82 118 Z" fill="#2A2340"></path>
+          <circle cx="120" cy="128" r="6" fill="#2A2340"></circle>
+          <circle cx="160" cy="128" r="6" fill="#2A2340"></circle>
+          <circle cx="104" cy="144" r="9" fill="#F08C7E" fill-opacity="0.55"></circle>
+          <circle cx="176" cy="144" r="9" fill="#F08C7E" fill-opacity="0.55"></circle>
+          <path d="M128 146 q12 11 24 0" fill="none" stroke="#2A2340" stroke-width="3.5" stroke-linecap="round"></path>
+          <path d="M48 100 L140 22 L232 100 Q140 120 48 100 Z" fill="#D9B36A"></path>
+          <path d="M74 86 Q140 100 206 86" fill="none" stroke="#B98F45" stroke-width="3" stroke-linecap="round"></path>
+          <path d="M100 62 Q140 70 180 62" fill="none" stroke="#B98F45" stroke-width="3" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div class="s3-text">
+          <div class="country"><span class="real">Vietnam</span><span class="q">?</span></div>
+          <div class="name">Tết Trung Thu</div>
+          <div class="say"><span class="lbl">Say:</span> tet choong too</div>
+        </div>
+      </div>
+      <div class="s3-col" data-col>
+        <div class="s3-fig">
+          <div class="disc" aria-hidden="true"></div>
+          <svg role="img" aria-label="Cartoon child in a green and pink Korean hanbok" viewBox="0 0 280 440">
+          <circle cx="84" cy="152" r="15" fill="#2A2340"></circle>
+          <circle cx="196" cy="152" r="15" fill="#2A2340"></circle>
+          <path d="M94 230 Q140 220 186 230 Q236 330 228 398 Q140 416 52 398 Q44 330 94 230 Z" fill="#E65A8D"></path>
+          <ellipse cx="118" cy="412" rx="18" ry="8" fill="#FFF8EC"></ellipse>
+          <ellipse cx="162" cy="412" rx="18" ry="8" fill="#FFF8EC"></ellipse>
+          <circle cx="62" cy="280" r="12" fill="#F5CFAE"></circle>
+          <circle cx="218" cy="280" r="12" fill="#F5CFAE"></circle>
+          <path d="M96 178 L184 178 L192 238 Q140 228 88 238 Z" fill="#6CC08B"></path>
+          <path d="M98 182 Q58 214 46 268 L78 282 Q94 250 112 228 Z" fill="#6CC08B"></path>
+          <path d="M182 182 Q222 214 234 268 L202 282 Q186 250 168 228 Z" fill="#6CC08B"></path>
+          <path d="M124 178 L140 208" fill="none" stroke="#FFF8EC" stroke-width="8" stroke-linecap="round"></path>
+          <path d="M157 178 L134 214" fill="none" stroke="#FFF8EC" stroke-width="8" stroke-linecap="round"></path>
+          <path d="M130 212 L122 290 L134 290 L138 212 Z" fill="#C2334D"></path>
+          <path d="M138 212 L147 270 L157 268 L144 210 Z" fill="#C2334D"></path>
+          <circle cx="136" cy="214" r="7" fill="#C2334D"></circle>
+          <circle cx="140" cy="120" r="58" fill="#F5CFAE"></circle>
+          <path d="M80 122 A60 60 0 0 1 200 122 Q180 88 140 82 Q100 88 80 122 Z" fill="#2A2340"></path>
+          <circle cx="140" cy="72" r="7" fill="#E65A8D"></circle>
+          <circle cx="120" cy="126" r="6" fill="#2A2340"></circle>
+          <circle cx="160" cy="126" r="6" fill="#2A2340"></circle>
+          <circle cx="104" cy="142" r="9" fill="#F08C7E" fill-opacity="0.55"></circle>
+          <circle cx="176" cy="142" r="9" fill="#F08C7E" fill-opacity="0.55"></circle>
+          <path d="M128 144 q12 11 24 0" fill="none" stroke="#2A2340" stroke-width="3.5" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div class="s3-text">
+          <div class="country"><span class="real">Korea</span><span class="q">?</span></div>
+          <div class="name">Chuseok</div>
+          <div class="say"><span class="lbl">Say:</span> choo-sock</div>
+        </div>
+      </div>
+      <div class="s3-col" data-col>
+        <div class="s3-fig">
+          <div class="disc" aria-hidden="true"></div>
+          <svg role="img" aria-label="Cartoon child in a blue Japanese kimono" viewBox="0 0 280 440">
+          <ellipse cx="118" cy="406" rx="20" ry="9" fill="#C9A27A"></ellipse>
+          <ellipse cx="162" cy="406" rx="20" ry="9" fill="#C9A27A"></ellipse>
+          <circle cx="62" cy="304" r="12" fill="#F1C49C"></circle>
+          <circle cx="218" cy="304" r="12" fill="#F1C49C"></circle>
+          <path d="M94 178 L186 178 L198 394 L82 394 Z" fill="#5E93E6"></path>
+          <path d="M96 184 L44 244 L44 302 L86 302 L104 240 Z" fill="#5E93E6"></path>
+          <path d="M184 184 L236 244 L236 302 L194 302 L176 240 Z" fill="#5E93E6"></path>
+          <path d="M126 176 L140 202 L154 176 Z" fill="#FFF8EC"></path>
+          <path d="M124 178 L146 232" fill="none" stroke="#3D68BD" stroke-width="9" stroke-linecap="round"></path>
+          <path d="M157 178 L120 240" fill="none" stroke="#3D68BD" stroke-width="9" stroke-linecap="round"></path>
+          <path d="M124 262 L118 394" fill="none" stroke="#3D68BD" stroke-width="4" stroke-linecap="round"></path>
+          <rect x="86" y="238" width="108" height="26" rx="4" fill="#F2B93B"></rect>
+          <circle cx="140" cy="120" r="58" fill="#F1C49C"></circle>
+          <path d="M80 122 A60 60 0 0 1 200 122 L186 100 L170 112 L154 96 L138 110 L122 96 L106 112 L92 100 Z" fill="#2A2340"></path>
+          <circle cx="120" cy="128" r="6" fill="#2A2340"></circle>
+          <circle cx="160" cy="128" r="6" fill="#2A2340"></circle>
+          <circle cx="104" cy="144" r="9" fill="#F08C7E" fill-opacity="0.55"></circle>
+          <circle cx="176" cy="144" r="9" fill="#F08C7E" fill-opacity="0.55"></circle>
+          <path d="M128 146 q12 11 24 0" fill="none" stroke="#2A2340" stroke-width="3.5" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div class="s3-text">
+          <div class="country"><span class="real">Japan</span><span class="q">?</span></div>
+          <div class="name">Tsukimi</div>
+          <div class="say"><span class="lbl">Say:</span> tsoo-kee-mee</div>
+        </div>
+      </div>
+    </div>
+
+    <svg class="abs" viewBox="0 0 160 270" style="right:calc(120*var(--u));top:0;width:calc(100*var(--u));height:calc(169*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="20" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="20" width="160" height="162"/>
+      <rect x="78" y="182" width="4" height="26" fill="#E9B949"/><path d="M70 208 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="208" r="8" fill="#E9B949"/>
+    </svg>
+    <svg class="abs" viewBox="0 0 160 320" style="right:calc(20*var(--u));top:0;width:calc(90*var(--u));height:calc(180*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="70" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="70" width="160" height="162"/>
+      <rect x="78" y="232" width="4" height="26" fill="#E9B949"/><path d="M70 258 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="258" r="8" fill="#E9B949"/>
+    </svg>
+
+    <h1 class="abs s3-title"><span class="intro">Same Holiday, Different Names</span><span class="game">Which country is it?</span></h1>
+  </section>
+
+  <!-- Slide 6: The Rabbit on the Moon -->
+  <section class="slide rabbit" id="rabbit">
+    <svg class="abs" style="right:calc(560*var(--u));top:calc(36*var(--u));width:calc(30*var(--u));height:calc(30*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs" style="left:calc(60*var(--u));top:calc(290*var(--u));width:calc(22*var(--u));height:calc(22*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(340*var(--u));top:calc(80*var(--u));width:calc(26*var(--u));height:calc(26*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(270*var(--u));top:calc(190*var(--u));width:calc(20*var(--u));height:calc(20*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs" style="left:calc(40*var(--u));top:calc(760*var(--u));width:calc(20*var(--u));height:calc(20*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <div class="abs" style="left:calc(900*var(--u));top:calc(60*var(--u));width:calc(10*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+    <div class="abs" style="left:calc(30*var(--u));top:calc(500*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+    <div class="abs" style="right:calc(30*var(--u));top:calc(240*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+
+    <svg class="abs clouds clouds-back" viewBox="0 0 1920 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 300 V160 a110 110 0 0 1 220 0 a80 80 0 0 1 160 0 a140 140 0 0 1 280 0 a90 90 0 0 1 180 0 a120 120 0 0 1 240 0 a70 70 0 0 1 140 0 a130 130 0 0 1 260 0 a100 100 0 0 1 200 0 a120 120 0 0 1 240 0 V300 Z" fill="#343A86"/>
+    </svg>
+
+    <div class="abs rb-moon">
+      <svg role="img" aria-label="Full moon with the shape of a standing rabbit pounding a tall pestle into a bowl" viewBox="0 0 620 620">
+        <circle cx="310" cy="310" r="310" fill="#FFD45E"/>
+        <g fill="#F5C04A">
+          <circle cx="470" cy="150" r="34"/><circle cx="120" cy="420" r="40"/><circle cx="500" cy="470" r="30"/><circle cx="330" cy="110" r="20"/>
+        </g>
+        <!-- The moon-rabbit shape people see in the dark patches: rabbit on the left, bowl on the right -->
+        <g class="sil" fill="#E0A63A">
+          <ellipse cx="262" cy="182" rx="20" ry="62" transform="rotate(-10 262 182)"/>
+          <ellipse cx="312" cy="178" rx="20" ry="62" transform="rotate(10 312 178)"/>
+          <circle cx="290" cy="272" r="58"/>
+          <ellipse cx="292" cy="400" rx="70" ry="94"/>
+          <circle cx="216" cy="420" r="24"/>
+          <ellipse cx="262" cy="492" rx="34" ry="14"/><ellipse cx="324" cy="492" rx="34" ry="14"/>
+          <path d="M340 360 L388 336" stroke="#E0A63A" stroke-width="26" stroke-linecap="round"/>
+          <rect x="390" y="320" width="22" height="104" rx="11"/>
+          <path d="M360 434 L442 434 L432 488 L370 488 Z"/>
+          <rect x="350" y="418" width="102" height="20" rx="10"/>
+        </g>
+      </svg>
+    </div>
+
+    <svg class="abs clouds clouds-front" viewBox="0 0 1920 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 220 V140 a90 90 0 0 1 180 0 a130 130 0 0 1 260 0 a70 70 0 0 1 140 0 a110 110 0 0 1 220 0 a100 100 0 0 1 200 0 a80 80 0 0 1 160 0 a120 120 0 0 1 240 0 a60 60 0 0 1 120 0 a100 100 0 0 1 200 0 a100 100 0 0 1 200 0 V220 Z" fill="#4A52A8"/>
+    </svg>
+
+    <div class="abs rb-cards">
+      <div class="rb-card" data-rb>
+        <svg role="img" aria-label="Chang'e in flowing robes floating on a cloud, holding a white rabbit" viewBox="0 0 240 240">
+          <g class="change">
+            <path d="M96 120 C56 104 40 160 14 146" fill="none" stroke="#E65A8D" stroke-width="7" stroke-linecap="round"/>
+            <path d="M146 124 C190 116 200 172 228 160" fill="none" stroke="#E65A8D" stroke-width="7" stroke-linecap="round"/>
+            <path d="M120 92 C92 104 82 152 66 202 Q120 218 172 202 C156 152 148 104 120 92 Z" fill="#FFF8EC"/>
+            <path d="M120 94 C104 112 94 152 86 198 Q104 206 120 206 C118 160 122 122 120 94 Z" fill="#F7A9A2"/>
+            <rect x="96" y="134" width="48" height="10" rx="5" fill="#9B6FD6"/>
+            <circle cx="120" cy="70" r="26" fill="#F3C7A2"/>
+            <path d="M93 70 A27 27 0 0 1 147 70 Q140 52 120 50 Q100 52 93 70 Z" fill="#2A2340"/>
+            <circle cx="120" cy="40" r="14" fill="#2A2340"/><circle cx="132" cy="34" r="4" fill="#E9B949"/>
+            <circle cx="111" cy="72" r="3.5" fill="#2A2340"/><circle cx="129" cy="72" r="3.5" fill="#2A2340"/>
+            <circle cx="103" cy="80" r="5" fill="#F08C7E" fill-opacity=".55"/><circle cx="137" cy="80" r="5" fill="#F08C7E" fill-opacity=".55"/>
+            <path d="M114 81 q6 6 12 0" fill="none" stroke="#2A2340" stroke-width="2.5" stroke-linecap="round"/>
+            <use href="#bunny" x="94" y="112" width="56" height="64"/>
+            <g fill="#C9CCF5"><circle cx="62" cy="208" r="22"/><circle cx="96" cy="200" r="30"/><circle cx="136" cy="204" r="28"/><circle cx="172" cy="210" r="22"/><rect x="62" y="206" width="110" height="26" rx="13"/></g>
+          </g>
+        </svg>
+        <div class="txt">
+          <div class="tag">China</div>
+          <div class="head">Chang'e and the Jade Rabbit</div>
+          <div class="sub">They flew up to the moon. The rabbit makes magic medicine!</div>
+        </div>
+      </div>
+      <div class="rb-card" data-rb>
+        <svg role="img" aria-label="A rabbit standing beside a wooden bowl, pounding rice cakes with a tall pestle" viewBox="0 0 240 240">
+          <g class="stand-bunny">
+            <circle cx="62" cy="196" r="12" fill="#FFF8EC"/>
+            <ellipse cx="86" cy="76" rx="10" ry="30" transform="rotate(-8 86 76)" fill="#FFF8EC"/>
+            <ellipse cx="86" cy="80" rx="5" ry="20" transform="rotate(-8 86 80)" fill="#F7A9A2"/>
+            <ellipse cx="112" cy="74" rx="10" ry="30" transform="rotate(8 112 74)" fill="#FFF8EC"/>
+            <ellipse cx="112" cy="78" rx="5" ry="20" transform="rotate(8 112 78)" fill="#F7A9A2"/>
+            <ellipse cx="98" cy="182" rx="36" ry="46" fill="#F1E6D4"/>
+            <ellipse cx="98" cy="190" rx="22" ry="30" fill="#FFF8EC"/>
+            <circle cx="98" cy="122" r="32" fill="#FFF8EC"/>
+            <circle cx="88" cy="118" r="4" fill="#1B1D4D"/><circle cx="110" cy="118" r="4" fill="#1B1D4D"/>
+            <circle cx="80" cy="130" r="5.5" fill="#F7A9A2" fill-opacity=".7"/><circle cx="118" cy="130" r="5.5" fill="#F7A9A2" fill-opacity=".7"/>
+            <ellipse cx="99" cy="127" rx="3.5" ry="2.5" fill="#E9837A"/>
+            <path d="M94 132 q2.5 4 5 0 q2.5 4 5 0" fill="none" stroke="#1B1D4D" stroke-width="2" stroke-linecap="round"/>
+          </g>
+          <ellipse cx="84" cy="230" rx="17" ry="7" fill="#FFF8EC"/><ellipse cx="114" cy="230" rx="17" ry="7" fill="#FFF8EC"/>
+          <path class="pestle-arm" d="M122 150 L150 118" stroke="#FFF8EC" stroke-width="14" stroke-linecap="round"/>
+          <path d="M134 202 L182 202 L176 230 L140 230 Z" fill="#A0652E"/>
+          <ellipse class="mochi" cx="158" cy="194" rx="22" ry="9" fill="#FFF8EC"/>
+          <rect x="128" y="196" width="60" height="10" rx="5" fill="#8A5426"/>
+          <g class="pestle">
+            <rect x="152" y="132" width="12" height="56" rx="6" fill="#8A5426"/>
+            <ellipse cx="150" cy="138" rx="8" ry="7" fill="#FFF8EC"/>
+          </g>
+        </svg>
+        <div class="txt">
+          <div class="tag">Japan &amp; Korea</div>
+          <div class="head">The Rice Cake Rabbit</div>
+          <div class="sub">The rabbit pounds yummy rice cakes on the moon!</div>
+        </div>
+      </div>
+    </div>
+
+    <h1 class="abs rb-title">The Rabbit on the Moon</h1>
+    <div class="abs rb-hint">Look closely… do you see a rabbit?</div>
+  </section>
+
+  <!-- Slide 7: Let's Make Paper Lanterns -->
+  <section class="slide mk" id="make">
+    <svg class="abs" style="right:calc(330*var(--u));top:calc(70*var(--u));width:calc(30*var(--u));height:calc(30*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(260*var(--u));top:calc(170*var(--u));width:calc(20*var(--u));height:calc(20*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs" style="left:calc(50*var(--u));top:calc(210*var(--u));width:calc(24*var(--u));height:calc(24*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs" style="left:calc(40*var(--u));top:calc(660*var(--u));width:calc(20*var(--u));height:calc(20*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <svg class="abs" style="right:calc(40*var(--u));top:calc(640*var(--u));width:calc(22*var(--u));height:calc(22*var(--u))" aria-hidden="true"><use href="#star"/></svg>
+    <div class="abs" style="left:calc(30*var(--u));top:calc(440*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+    <div class="abs" style="right:calc(30*var(--u));top:calc(330*var(--u));width:calc(8*var(--u));aspect-ratio:1;border-radius:50%;background:var(--star)" aria-hidden="true"></div>
+
+    <svg class="abs clouds clouds-back" viewBox="0 0 1920 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 300 V160 a110 110 0 0 1 220 0 a80 80 0 0 1 160 0 a140 140 0 0 1 280 0 a90 90 0 0 1 180 0 a120 120 0 0 1 240 0 a70 70 0 0 1 140 0 a130 130 0 0 1 260 0 a100 100 0 0 1 200 0 a120 120 0 0 1 240 0 V300 Z" fill="#343A86"/>
+    </svg>
+    <svg class="abs clouds clouds-front" viewBox="0 0 1920 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 220 V140 a90 90 0 0 1 180 0 a130 130 0 0 1 260 0 a70 70 0 0 1 140 0 a110 110 0 0 1 220 0 a100 100 0 0 1 200 0 a80 80 0 0 1 160 0 a120 120 0 0 1 240 0 a60 60 0 0 1 120 0 a100 100 0 0 1 200 0 a100 100 0 0 1 200 0 V220 Z" fill="#4A52A8"/>
+    </svg>
+
+    <div class="abs mk-row">
+      <div class="mk-col" data-mk>
+        <div class="mk-fig">
+          <div class="disc" aria-hidden="true"></div>
+          <svg role="img" aria-label="A flat paper lantern popping open into a round ball" viewBox="0 0 300 300">
+            <g class="pop" style="transform-box: view-box; transform-origin: 150px 160px"><circle class="paper" cx="150" cy="160" r="96"/><path class="rib" d="M92.4 83.2 Q150 90.2 207.6 83.2" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M73.2 102.4 Q150 109.4 226.8 102.4" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M62.0 121.6 Q150 128.6 238.0 121.6" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M55.9 140.8 Q150 147.8 244.1 140.8" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M54.0 160.0 Q150 167.0 246.0 160.0" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M55.9 179.2 Q150 186.2 244.1 179.2" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M62.0 198.4 Q150 205.4 238.0 198.4" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M73.2 217.6 Q150 224.6 226.8 217.6" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M92.4 236.8 Q150 243.8 207.6 236.8" fill="none" stroke-width="3" stroke-opacity=".7"/><ellipse cx="150" cy="70.7" rx="32.6" ry="8.6" fill="#5E8A2C"/><ellipse cx="150" cy="249.3" rx="32.6" ry="8.6" fill="#5E8A2C"/></g><g stroke="#E8452F" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M36 90 V230"/><path d="M24 104 L36 90 L48 104"/><path d="M24 216 L36 230 L48 216"/></g><g stroke="#E8452F" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M264 90 V230"/><path d="M252 104 L264 90 L276 104"/><path d="M252 216 L264 230 L276 216"/></g>
+          </svg>
+          <div class="num" aria-hidden="true">1</div>
+        </div>
+        <div class="head">Pop it open</div>
+      </div>
+      <div class="mk-col" data-mk>
+        <div class="mk-fig">
+          <div class="disc" aria-hidden="true"></div>
+          <svg role="img" aria-label="A rectangle wire frame with a hook sliding down inside the lantern to hold it open" viewBox="0 0 300 300">
+            <circle class="paper" cx="150" cy="178" r="92"/><path class="rib" d="M94.8 104.4 Q150 111.4 205.2 104.4" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M76.4 122.8 Q150 129.8 223.6 122.8" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M65.7 141.2 Q150 148.2 234.3 141.2" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M59.9 159.6 Q150 166.6 240.1 159.6" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M58.0 178.0 Q150 185.0 242.0 178.0" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M59.9 196.4 Q150 203.4 240.1 196.4" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M65.7 214.8 Q150 221.8 234.3 214.8" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M76.4 233.2 Q150 240.2 223.6 233.2" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M94.8 251.6 Q150 258.6 205.2 251.6" fill="none" stroke-width="3" stroke-opacity=".7"/><ellipse cx="150" cy="92.4" rx="31.3" ry="8.3" fill="#5E8A2C"/><ellipse cx="150" cy="263.6" rx="31.3" ry="8.3" fill="#5E8A2C"/><g class="wire"><path d="M124 96 H176 V260 H124 Z" fill="none" stroke="#6E76A8" stroke-width="6" stroke-linejoin="round"/><circle cx="150" cy="85" r="9" fill="none" stroke="#6E76A8" stroke-width="5"/><path d="M150 96 V110 q0 8 -6 8 q-6 0 -6 -6" fill="none" stroke="#6E76A8" stroke-width="5" stroke-linecap="round"/></g><g stroke="#E8452F" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M230 30 V96"/><path d="M216 82 L230 96 L244 82"/></g>
+          </svg>
+          <div class="num" aria-hidden="true">2</div>
+        </div>
+        <div class="head">Put the wire in</div>
+      </div>
+      <div class="mk-col" data-mk>
+        <div class="mk-fig">
+          <div class="disc" aria-hidden="true"></div>
+          <svg role="img" aria-label="Twisting the small LED light to turn it on" viewBox="0 0 300 300">
+            <g class="twist" style="transform-box: view-box; transform-origin: 150px 150px"><rect x="138.8" y="66.8" width="22.4" height="15.4" rx="4.5" fill="#9EA3C9"/><rect x="122" y="80" width="56" height="110" rx="12.3" fill="#C9CCF5"/><rect x="132.1" y="91.0" width="7.8" height="77.0" rx="3.9" fill="#FFF8EC" fill-opacity=".7"/><path class="led-dome" d="M122 190 h56 v11.0 a28.0 30.8 0 0 1 -56 0 Z"/></g><g class="rays" stroke="#FFD45E" stroke-width="6" stroke-linecap="round"><path d="M150 236 V262"/><path d="M112 222 L94 240"/><path d="M188 222 L206 240"/><path d="M100 200 H76"/><path d="M200 200 H224"/></g><g fill="none" stroke="#E8452F" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M96 116 A60 22 0 0 0 204 116"/><path d="M188 104 L204 116 L190 132"/></g>
+          </svg>
+          <div class="num" aria-hidden="true">3</div>
+        </div>
+        <div class="head">Twist it on</div>
+      </div>
+      <div class="mk-col" data-mk>
+        <div class="mk-fig">
+          <div class="disc" aria-hidden="true"></div>
+          <svg role="img" aria-label="The LED light hanging on the hook inside the top of the glowing lantern" viewBox="0 0 300 300">
+            <circle class="paper" cx="150" cy="172" r="96"/><path class="rib" d="M92.4 95.2 Q150 102.2 207.6 95.2" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M73.2 114.4 Q150 121.4 226.8 114.4" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M62.0 133.6 Q150 140.6 238.0 133.6" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M55.9 152.8 Q150 159.8 244.1 152.8" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M54.0 172.0 Q150 179.0 246.0 172.0" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M55.9 191.2 Q150 198.2 244.1 191.2" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M62.0 210.4 Q150 217.4 238.0 210.4" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M73.2 229.6 Q150 236.6 226.8 229.6" fill="none" stroke-width="3" stroke-opacity=".7"/><path class="rib" d="M92.4 248.8 Q150 255.8 207.6 248.8" fill="none" stroke-width="3" stroke-opacity=".7"/><ellipse cx="150" cy="82.7" rx="32.6" ry="8.6" fill="#5E8A2C"/><ellipse cx="150" cy="261.3" rx="32.6" ry="8.6" fill="#5E8A2C"/><path class="wire-inside" d="M124 86 H176 V258 H124 Z" fill="none" stroke="#6E76A8" stroke-width="6" stroke-linejoin="round"/><circle class="wire-inside" cx="150" cy="75" r="9" fill="none" stroke="#6E76A8" stroke-width="5"/><path class="hook" d="M150 86 V100 q0 8 -6 8 q-6 0 -6 -6" fill="none" stroke="#4A5288" stroke-width="6" stroke-linecap="round"/><g class="led-in"><g transform="translate(130 112) scale(.5)"><rect x="16.8" y="-13.2" width="22.4" height="15.4" rx="4.5" fill="#9EA3C9"/><rect x="0" y="0" width="56" height="110" rx="12.3" fill="#C9CCF5"/><rect x="10.1" y="11.0" width="7.8" height="77.0" rx="3.9" fill="#FFF8EC" fill-opacity=".7"/><path class="led-dome" d="M0 110 h56 v11.0 a28.0 30.8 0 0 1 -56 0 Z"/></g></g><g stroke="#E8452F" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M150 8 V62"/><path d="M136 48 L150 62 L164 48"/></g>
+          </svg>
+          <div class="num" aria-hidden="true">4</div>
+        </div>
+        <div class="head">Hang the light</div>
+      </div>
+    </div>
+
+    <svg class="abs" viewBox="0 0 160 270" style="right:calc(120*var(--u));top:0;width:calc(100*var(--u));height:calc(169*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="20" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="20" width="160" height="162"/>
+      <rect x="78" y="182" width="4" height="26" fill="#E9B949"/><path d="M70 208 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="208" r="8" fill="#E9B949"/>
+    </svg>
+    <svg class="abs" viewBox="0 0 160 320" style="right:calc(20*var(--u));top:0;width:calc(90*var(--u));height:calc(180*var(--u))" aria-hidden="true">
+      <rect x="78" y="0" width="4" height="70" fill="#E9B949"/>
+      <use href="#lantern-body" x="0" y="70" width="160" height="162"/>
+      <rect x="78" y="232" width="4" height="26" fill="#E9B949"/><path d="M70 258 h20 l5 56 h-30 z" fill="#E8452F"/><circle cx="80" cy="258" r="8" fill="#E9B949"/>
+    </svg>
+
+    <h1 class="abs mk-title">Let's Make Paper Lanterns!</h1>
+    <div class="abs mk-bye">Happy Mid-Autumn Festival!<span class="zh" lang="zh-Hans">中秋节快乐</span></div>
+  </section>
+
+</main>
+
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  // Per-slide click actions run before advancing, keyed by slide id so inserting slides doesn't shift them
+  const stepActions = {
+    welcome: [() => document.getElementById("mia").classList.add("run-off")],
+    who: [() => {
+      document.getElementById("s2-bubble").classList.add("show");
+      document.getElementById("s2-bunny").classList.add("cheer");
+    }],
+    names: [() => document.getElementById("names").classList.add("guess")],
+    why: [0, 1, 2].map((i) => () => document.querySelectorAll("#why [data-why]")[i].classList.add("on")),
+    rabbit: [
+      () => document.getElementById("rabbit").classList.add("sil-on"),
+      ...[0, 1].map((i) => () => document.querySelectorAll("#rabbit [data-rb]")[i].classList.add("on")),
+    ],
+    make: [0, 1, 2, 3].map((i) => () => {
+      const cols = document.querySelectorAll("#make [data-mk]");
+      cols[i].classList.add("on");
+      // Last step: the light goes in, so the pictured lanterns all light up and the closing line appears
+      if (i === 3) {
+        setTimeout(() => cols[3].classList.add("glow"), 1100);
+        setTimeout(() => document.getElementById("make").classList.add("lit"), 1700);
+      }
+    }),
+  };
+  const resetSlide = {
+    welcome: () => document.getElementById("mia").classList.remove("run-off"),
+    who: () => {
+      document.getElementById("s2-bubble").classList.remove("show");
+      document.getElementById("s2-bunny").classList.remove("cheer");
+    },
+    names: () => {
+      const s3 = document.getElementById("names");
+      s3.classList.remove("guess");
+      s3.querySelectorAll("[data-col]").forEach((c) => c.classList.remove("revealed"));
+    },
+    why: () => document.querySelectorAll("#why [data-why]").forEach((c) => c.classList.remove("on")),
+    rabbit: () => {
+      document.getElementById("rabbit").classList.remove("sil-on");
+      document.querySelectorAll("#rabbit [data-rb]").forEach((c) => c.classList.remove("on"));
+    },
+    make: () => {
+      document.getElementById("make").classList.remove("lit");
+      document.querySelectorAll("#make [data-mk]").forEach((c) => c.classList.remove("on", "glow"));
+    },
+  };
+
+  // Slide 3 game: once in guess mode, clicking a kid (or pressing 1-4) reveals that country without advancing
+  const s3Cols = [...document.querySelectorAll("#names [data-col]")];
+  function revealS3(i) {
+    if (slides[current].id !== "names" || !document.getElementById("names").classList.contains("guess")) return false;
+    s3Cols[i].classList.add("revealed");
+    return true;
+  }
+  s3Cols.forEach((col, i) => col.addEventListener("click", (e) => {
+    if (revealS3(i)) e.stopPropagation();
+  }));
+
+  let current = 0, step = 0;
+
+  function show(i) {
+    current = Math.max(0, Math.min(slides.length - 1, i));
+    step = 0;
+    slides.forEach((s, n) => s.classList.toggle("active", n === current));
+    resetSlide[slides[current].id]?.();
+    history.replaceState(null, "", "#" + (current + 1));
+  }
+
+  function next() {
+    const actions = stepActions[slides[current].id] || [];
+    if (step < actions.length) { actions[step++](); return; }
+    if (current < slides.length - 1) show(current + 1);
+  }
+
+  function prev() {
+    if (step > 0) { show(current); return; }
+    show(current - 1);
+  }
+
+  document.getElementById("stage").addEventListener("click", next);
+  document.addEventListener("keydown", (e) => {
+    if ([" ", "ArrowRight", "ArrowDown", "PageDown", "Enter"].includes(e.key)) { e.preventDefault(); next(); }
+    else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); prev(); }
+    else if (["1", "2", "3", "4"].includes(e.key)) { revealS3(Number(e.key) - 1); }
+    else if (e.key === "f") { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+  });
+
+  show((parseInt(location.hash.slice(1), 10) || 1) - 1);
+</script>
+</body>
+</html>
