@@ -2,6 +2,8 @@
 
 International Celebration, 1st grade · Nov 6 · about 5 minutes of slides, then the lantern craft
 
+**Bring:** real mooncakes (display only, keep wrapped) · 3D-printed mooncake models to pass around · paper lantern kits
+
 **Deck:** https://weilu.github.io/mid-autumn-festival/
 
 **Controls:** click, → or space = next · ← = back · `f` = full screen · on slide 5, click a kid or press **1–4** to reveal a country
@@ -10,7 +12,7 @@ International Celebration, 1st grade · Nov 6 · about 5 minutes of slides, then
 |---|-------|------|
 | 1 | Welcome | 0:15 |
 | 2 | What Is It? | 0:45 |
-| 3 | Why & How Do We Celebrate? | 1:00 |
+| 3 | Why & How Do We Celebrate? | 1:30 |
 | 4 | Who Celebrates? | 0:30 |
 | 5 | Same Holiday, Different Names | 1:00 |
 | 6 | The Rabbit on the Moon | 0:45 |
@@ -40,10 +42,19 @@ International Celebration, 1st grade · Nov 6 · about 5 minutes of slides, then
 **Click 2 · Families Together**
 > "This is the most important part. Families travel from far away to be **together**: grandmas, grandpas, moms, dads and kids. Everyone comes home."
 
-Does that sound like a holiday we have here?" (Thanksgiving!)*
+> "Does that sound like a holiday we have here?" (Thanksgiving!)
 
 **Click 3 · Mooncakes & Lanterns**
 > "And how do families celebrate? They eat **mooncakes**, which are round like the full moon, and kids carry **glowing lanterns** at night, like this red one and this star one from Vietnam."
+
+**Mooncake show-and-tell** (real mooncakes + 3D-printed models)
+
+> Hold up a real mooncake: "Here's a real mooncake! See the pretty pattern pressed on top? Inside there's a sweet filling, and some even have a golden egg yolk in the middle, like a little full moon!"
+
+> Hand out the 3D-printed mooncakes: "These are pretend mooncakes you can touch. Look closely and feel the pattern with your fingers. Is it round like the moon? Then gently pass it to your neighbor."
+
+- The real mooncakes are **for looking only**: no food is allowed at the event, so keep them wrapped on the display table.
+- Passing takes time. Keep going to slide 4 while the models go around, and have a helper collect them before the latern craft.
 
 
 ---
