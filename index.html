@@ -509,7 +509,8 @@
       <div class="sub">The Moon Festival</div>
     </div>
 
-    <div class="abs mia" id="mia"><div class="wiggle"><img src="assets/mia-sticker.png" alt="Mia"></div></div>
+    <!-- Hidden unless the URL has ?mia=1; the photo isn't even requested otherwise -->
+    <div class="abs mia" id="mia" hidden><div class="wiggle"><img data-src="assets/mia-sticker.png" alt="Mia"></div></div>
   </section>
 
   <!-- Slide 2: What Is It? -->
@@ -1157,9 +1158,17 @@
 
 <script>
   const slides = [...document.querySelectorAll(".slide")];
+
+  const showMia = new URLSearchParams(location.search).get("mia") === "1";
+  if (showMia) {
+    const mia = document.getElementById("mia");
+    const img = mia.querySelector("img");
+    img.src = img.dataset.src;
+    mia.hidden = false;
+  }
   // Per-slide click actions run before advancing, keyed by slide id so inserting slides doesn't shift them
   const stepActions = {
-    welcome: [() => document.getElementById("mia").classList.add("run-off")],
+    welcome: showMia ? [() => document.getElementById("mia").classList.add("run-off")] : [],
     who: [() => {
       document.getElementById("s2-bubble").classList.add("show");
       document.getElementById("s2-bunny").classList.add("cheer");
